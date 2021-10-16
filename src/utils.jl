@@ -1,5 +1,7 @@
-import Base:getindex
+import Base:getindex, size, +, -, *, /
 using RecipesBase
+
+N{T} = Union{T, Nothing}
 
 # Pauli matrices
 const σ_x = [0 1; 1 0]
@@ -16,17 +18,24 @@ end
 
 function CoordinateRepr(mat::Matrix{T}, indexing_type::Symbol) where T <: Real
     if indexing_type ∈ (:c, :coord)
-        new(copy(mat))
+        CoordinateRepr(copy(mat))
     elseif indexing_type ∈ (:n, :natural)
-        new(mat[end:-1:1, :] |> transpose |> Matrix)
+        CoordinateRepr(mat[end:-1:1, :] |> transpose |> Matrix)
     else
         error("Unsupported indexing type $indexing_type")
     end
 end
 
+size(coord::CoordinateRepr) = size(coord._inner_mat)
+
 getindex(coord::CoordinateRepr, args...) = getindex(coord._inner_mat, args...)
 
 @recipe f(::Type{T}, val::T) where T <: CoordinateRepr = val._inner_mat |> transpose
+
++(c1::CoordinateRepr, c2::CoordinateRepr) = CoordinateRepr(c1._inner_mat + c2._inner_mat)
+-(c1::CoordinateRepr, c2::CoordinateRepr) = CoordinateRepr(c1._inner_mat - c2._inner_mat)
+*(c1::CoordinateRepr, a::Number) = CoordinateRepr(c1._inner_mat * a)
+/(c1::CoordinateRepr, a::Number) = CoordinateRepr(c1._inner_mat / a)
 
 # Pair-index conversion
 
@@ -38,6 +47,8 @@ function index_to_pair(sz::NTuple{2,Integer}, i::Integer)::Vector{Integer}
     a = i % sz[1] == 0 ? sz[1] : i % sz[1]
     return [a, round(Integer, (i - a) / sz[1]) + 1]
 end
+
+dist(sz, i, j) = norm(index_to_pair(sz, i) - index_to_pair(sz, j))
 
 function adjacent_sites(sz::NTuple{2,Integer}, site::Vector{Integer}, order::Integer)
     adj = Set()

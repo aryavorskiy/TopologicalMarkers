@@ -1,14 +1,28 @@
 using Logging
 import LinearAlgebra: eigen
 
+_current_size = nothing
+
+function _try_get_sz(sz::N{NTuple{2, Integer}}) 
+    if sz !== nothing
+        return sz
+    end
+    if _current_size !== nothing
+        return _current_size
+    else
+        error("Please specify lattice size explicitly")
+    end
+end
+
 function set_hopping!(H::AbstractMatrix{Complex{T}}, i::Integer, j::Integer, hop::AbstractMatrix{Complex{T}}) where T<:Real
     H[2 * i - 1:2 * i, 2 * j - 1:2 * j] = hop
     H[2 * j - 1:2 * j, 2 * i - 1:2 * i] = hop'
 end
 
-function _hamiltonian(type::Type{T}, m_lattice::CoordinateRepr, pbc::Tuple{Bool, Bool})::AbstractMatrix{Complex{T}} where T<:Real
+function _hamiltonian(dtype::Type{T}, m_lattice::CoordinateRepr, pbc::Tuple{Bool, Bool})::AbstractMatrix{Complex{T}} where T<:Real
     sz = size(m_lattice)
-    H = zeros(Complex{type}, (prod(sz) * 2, prod(sz) * 2))
+    global _current_size = sz
+    H = zeros(Complex{dtype}, (prod(sz) * 2, prod(sz) * 2))
 
     # Generate diagonal elements
     for i in 1:prod(sz)
@@ -31,32 +45,31 @@ function _hamiltonian(type::Type{T}, m_lattice::CoordinateRepr, pbc::Tuple{Bool,
     return H
 end
 
-function field!(H::AbstractMatrix{Complex{<:Real}}, sz::NTuple{2, Integer}, A::Function, n_interval::Integer=10)
+function field!(H::AbstractMatrix{<:Complex{<:Real}}, A::Function, sz::N{NTuple{2, Integer}} = nothing; intervals::Integer=10)
+    sz = _try_get_sz(sz)
     local function peierls(i, j)
         phase = 0.
         r1 = index_to_pair(sz, i)
         r2 = index_to_pair(sz, j)
-        dr = (r2 - r1) / n_interval
-        for i in 1:n_interval
-            phase += dr' * A(r1 + (i - 0.5) / n * r2)[1:2]
+        dr = (r2 - r1) / intervals
+        for i in 1:intervals
+            phase += dr' * A(r1 + (i - 0.5) * dr)[1:2]
         end
-        return 2π * im * phase |> exp
+        return -2π * im * phase |> exp
     end
-    for i in 1:sz[1]
-        for j in 1:sz[2]
-            i1 = pair_to_index(sz, i, j)
-            i2 = pair_to_index(sz, i+1, j)
-            H[2 * i1 - 1:2 * i1, 2 * i2 - 1:2 * i2] .*= peierls(i1, i2)
-            H[2 * i2 - 1:2 * i2, 2 * i1 - 1:2 * i1] .*= peierls(i2, i1)
-            
-            i2 = pair_to_index(sz, i, j+1)
-            H[2 * i1 - 1:2 * i1, 2 * i2 - 1:2 * i2] .*= peierls(i1, i2)
-            H[2 * i2 - 1:2 * i2, 2 * i1 - 1:2 * i1] .*= peierls(i2, i1)
-        end
+    for i in 1:sz[1], j in 1:sz[2]
+        i1 = pair_to_index(sz, i, j)
+        i2 = pair_to_index(sz, i+1, j)
+        H[2 * i1 - 1:2 * i1, 2 * i2 - 1:2 * i2] *= peierls(i1, i2)
+        H[2 * i2 - 1:2 * i2, 2 * i1 - 1:2 * i1] *= peierls(i2, i1)
+        
+        i2 = pair_to_index(sz, i, j+1)
+        H[2 * i1 - 1:2 * i1, 2 * i2 - 1:2 * i2] *= peierls(i1, i2)
+        H[2 * i2 - 1:2 * i2, 2 * i1 - 1:2 * i1] *= peierls(i2, i1)
     end
 end
 
-function zones!(H::AbstractMatrix{Complex{<:Real}}, zone_mapping::CoordinateRepr)
+function zones!(H::AbstractMatrix{<:Complex{<:Real}}, zone_mapping::CoordinateRepr)
     sz = size(zone_mapping)
     E = zeros(2, 2)
     for i in 1:sz[1]
@@ -92,13 +105,13 @@ h. c.$
 - `zones`: A matrix with elements of arbitrary type, which maps sites to isolated zones. The hopping members between different zones are erased. There are no isolated zones by default.
 - `field`: A function/lambda that takes two coordinates and returns the vector potential of the magnetic field. Used to calculate phase factors on hoppings. There is no magnetic field by default.
 """
-function hamiltonian(m_lattice::CoordinateRepr{<:Real}; kwargs...)::AbstractMatrix{Complex{<:Real}}
-    arg_keys = Set(keys(kwargs))
+function hamiltonian(m_lattice::CoordinateRepr{<:Real}; kw...)
+    arg_keys = Set(keys(kw))
     
     function process_kw(fun::Function, k::Symbol, type::Type)
         if k in arg_keys
-            @assert kwargs[k] isa type "Unsupproted type of keyword \"$k\": expected '$type', got '$(typeof(kwargs[k]))'"
-            fun(kwargs[k])
+            @assert kw[k] isa type "Unsupproted type of keyword \"$k\": expected '$type', got '$(typeof(kw[k]))'"
+            fun(kw[k])
         end
     end
 
@@ -118,7 +131,7 @@ function hamiltonian(m_lattice::CoordinateRepr{<:Real}; kwargs...)::AbstractMatr
     end
 
     process_kw(:field, Function) do A_fun
-        field!(H, size(m_lattice),A_fun)
+        field!(H, A_fun, size(m_lattice))
     end
 
     return H
