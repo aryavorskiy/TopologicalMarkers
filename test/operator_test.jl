@@ -11,7 +11,10 @@
 end
 
 @testset "Currents test" begin
+    B = 1e-8
+    ms = CoordinateRepr(ones(15, 15) * -1)
+    ham_b = hamiltonian(ms, field=@symm(B))
     p_b = filled_projector(ham_b)
-    curr_b = currents(ham_b, p_b) / B
-    @test all(abs(sum(curr_b[i, :])) < 1e-10 for i in 1:size(curr_b)[2])
+    curr_b = currents(ham_b, p_b)
+    @test [abs(sum(curr_b[i, :])) for i in 1:size(curr_b)[2]] |> maximum < 1e-12
 end

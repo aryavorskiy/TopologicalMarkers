@@ -80,7 +80,7 @@ macro evolution(evolvers, loop)
             t_inner = $(esc(loop_var))
             counter += 1
         end
-        print("\rProcessing complete!" * " "^l)
+        print("\rProcessing complete!" * " "^l * "\r")
     end
     append!(main_block.args, new_loop.args)
     return main_block

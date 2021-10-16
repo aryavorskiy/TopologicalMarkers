@@ -8,8 +8,9 @@
         A2 = @landau B
         A3 = @landau B ((-2, 2.4), :all)
         @landau B ((X1, X2), q .* p .+ 1)
-        @test A3([4,7]) == 0
-        @test A1([0, 1]) == A2([0, 1]) == A3([0, 1])
+        @test (A3([4,7]) .== 0) |> all
+        @test A1([0, 1]) == A2([0, 1])
+        @test A2([0, 1]) == A3([0, 1])
     end
     
     @testset "Symmetric gauge" begin

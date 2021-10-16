@@ -14,7 +14,7 @@ function _try_get_sz(sz::N{NTuple{2, Integer}})
     end
 end
 
-function set_hopping!(H::AbstractMatrix{Complex{T}}, i::Integer, j::Integer, hop::AbstractMatrix{Complex{T}}) where T<:Real
+function set_hopping!(H::AbstractMatrix{Complex{T}}, i::Integer, j::Integer, hop::AbstractMatrix) where T<:Real
     H[2 * i - 1:2 * i, 2 * j - 1:2 * j] = hop
     H[2 * j - 1:2 * j, 2 * i - 1:2 * i] = hop'
 end
