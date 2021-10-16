@@ -1,8 +1,10 @@
-using Plots: plot, plot!, Plot, heatmap!, current, @layout
+using Plots: plot, plot!, Plot, heatmap!, quiver!, xlims!, ylims!, 
+    hline!, vline!, current, @layout, grid
 using LinearAlgebra: norm, normalize
 using Base:getindex
 
-function heatmap_data(op::AbstractMatrix{<:Complex{T}}, sz::NTuple{2,Integer})::CoordinateRepr{T} where T <: Real
+function heatmap_data(op::AbstractMatrix{<:Complex{T}}, sz::N{NTuple{2,Integer}}=nothing)::CoordinateRepr{T} where T <: Real
+    sz = _try_get_sz(sz)
     markers = zeros(T, sz)
     for i in 1:prod(sz)
         markers[i] = tr(op[2 * i - 1:2 * i, 2 * i - 1:2 * i]) |> real
@@ -20,12 +22,13 @@ function _arrow_data(sz::NTuple{2,Integer}, cur::Real, i::Integer, j::Integer)
     local site = index_to_pair(sz, i)
     local other = index_to_pair(sz, j)
     local vec = normalize(other - site) * cur
-    return site, vec |> Tuple
+    return Tuple(site), Tuple(vec)
 end
 
-function quiver_data(sz::NTuple{2,Integer}, currents_mat::AbstractMatrix{Real}; threshold::Real=0.1, dist_threshold::Real=Inf)
-    ps = []
-    qs = []
+function quiver_data(currents_mat::AbstractMatrix{<:Real}, sz::N{NTuple{2,Integer}}=nothing; threshold::Real=0.1, dist_threshold::Real=Inf)
+    sz = _try_get_sz(sz)
+    ps = Vector{NTuple{2,<:Integer}}()
+    qs = Vector{NTuple{2,<:Real}}()
     for i in 1:prod(sz), j in 1:(i - 1)
         p, q = _arrow_data(sz, currents_mat[i, j], i, j)
         if norm(q) > threshold && dist(sz, i, j) < dist_threshold
@@ -36,10 +39,11 @@ function quiver_data(sz::NTuple{2,Integer}, currents_mat::AbstractMatrix{Real}; 
     return ps, qs
 end
 
-function quiver_currents!(pl::Plot, sz::NTuple{2,Integer}, currents_mat::AbstractMatrix{Real};
-    threshold::Real=0.1, dist_threshold::Real=Inf, scale::Real=1, kw...)::Plots.Plot
-    ps, qs = quiver_data(sz, currents_mat, threshold=threshold, dist_threshold=dist_threshold)
-    if scale != 1
+function quiver_currents!(pl::Plot, currents_mat::AbstractMatrix{<:Real}, sz::N{NTuple{2,Integer}}=nothing;
+    threshold::Real=0.1, dist_threshold::Real=Inf, scale::Real=0, kw...)::Plots.Plot
+    sz = _try_get_sz(sz)
+    ps, qs = quiver_data(currents_mat, sz; threshold=threshold, dist_threshold=dist_threshold)
+    if scale != 0
         qs .|> (arrow -> @. arrow * scale)
     else
         mx = qs .|> norm |> maximum
@@ -49,8 +53,8 @@ function quiver_currents!(pl::Plot, sz::NTuple{2,Integer}, currents_mat::Abstrac
     return quiver!(pl, ps, quiver=qs, kw...)
 end
 
-quiver_currents!(sz::NTuple{2,Integer}, currents_mat::AbstractMatrix{Real}; kw...) =
-    quiver_currents!(current(), sz, currents_mat; kw...)
+quiver_currents!(currents_mat::AbstractMatrix{<:Real}, sz::NTuple{2,Integer}; kw...) = 
+    quiver_currents!(current(), currents_mat, sz; kw...)
 
 # Boundary visualization
 
@@ -70,18 +74,21 @@ end
 plot_boundaries!(zone_mapping::AbstractMatrix; kw...)::Plots.Plot =
     plot_boundaries!(current(), zone_mapping, kw...)
 
-function _expand_arg(arg)
+function _expand_arg(arg, sz)
     mat = nothing
     tit = ""
     cur = nothing
-    if arg isa CoordinateRepr
-        mat = arg
+    mat_type = Union{AbstractMatrix,CoordinateRepr}
+    obtain_mat(obj) = obj isa AbstractMatrix ? heatmap_data(obj, sz) : obj
+    
+    if arg isa mat_type
+        mat = obtain_mat(arg)
     elseif arg isa Pair
         tit = arg.first
-        if arg.second isa CoordinateRepr
-            mat = arg.second
+        if arg.second isa mat_type
+            mat = obtain_mat(arg.second)
         elseif arg.second isa Pair
-            mat = arg.second.first
+            mat = obtain_mat(arg.second.first)
             cur = arg.second.second
         else
             error("could not expand arg $arg:\nInvalid operand#2 of pair, must be Pair or CoordinateRepr, not $(typeof(arg.second))")
@@ -101,7 +108,7 @@ The subplots are automatically arranged according to plot size (if provided) or 
 
 Each argument can be either a `CoordinateRepr` object or a chain of pairs.
 """
-function plot_arranged(args...; zone_mapping=nothing, title="", control_site=nothing, plot_size=nothing, cell_size=(400, 350), title_margin=50, clims=:auto, legend=:best)
+function plot_arranged(args...; zone_mapping=nothing, title="", control_site=nothing, plot_size=nothing, cell_size=(450, 350), title_margin=50, clims=:auto, legend=:best, lattice_size=nothing)
     # Obtain optimal size & layout
     plots_total = length(args) + (control_site !== nothing)
     if plot_size === nothing
@@ -123,28 +130,30 @@ function plot_arranged(args...; zone_mapping=nothing, title="", control_site=not
     end
     p = plot(layout=l, legend=legend, size=plot_size)
 
+    lattice_size = _try_get_sz(lattice_size)
+
     # Process args
     for i in 1:length(args)
-        repr, tit, cur = _expand_arg(args[i])
+        repr, tit, cur = _expand_arg(args[i], lattice_size)
         heatmap!(p[i], repr, title=tit, clims=clims, cbar=:right)
         if cur !== nothing
-            xs, ys, qs = quiver_data(siz, cur)
-            quiver!(p[i], xs, ys; quiver=qs, color="brown",)
+            ps, qs = quiver_data(cur, lattice_size)
+            quiver!(p[i], ps; quiver=qs, color="brown",)
         end
         if zone_mapping !== nothing
             plot_boundaries!(p[i], zone_mapping, color=:black)
         end
         if control_site !== nothing
-            hline!(p[i], [control_site[2]]; color="brown")
-            plot!(p[i], [control_site]; st=:scatter, color="brown")
+            hline!(p[i], [control_site[2]]; color="brown", lab=nothing)
+            plot!(p[i], [control_site]; st=:scatter, color="brown", lab=nothing)
 
             plot!(p[plots_total], ylim=(clims isa NTuple{2,<:Real} ? clims .* 2 : clims))
-            plot!(p[plots_total], mat[:, control_site[2]], lab=tit, kw...)
+            plot!(p[plots_total], repr[:, control_site[2]], lab=tit)
             hline!(p[plots_total], [-1, 1]; style=:dot, lab=nothing)
             vline!(p[plots_total], [control_site[1]]; color="brown", lab=nothing)
         end
-        xlims!(p[i], (0, size(mat)[1] + 1))
-        ylims!(p[i], (0, size(mat)[2] + 1))
+        xlims!(p[i], (0, lattice_size[1] + 1))
+        ylims!(p[i], (0, lattice_size[2] + 1))
     end
     return plot!(p, plot_title=title)
 end

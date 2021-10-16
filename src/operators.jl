@@ -1,12 +1,14 @@
 using LinearAlgebra
 
 function filled_projector(H::Matrix{<:Complex{<:Real}}, energy_thr::Real=0)
-    val, vec = eigen(H)
-    d = (val .≤ energy_thr) .|> Int |> Diagonal
+    val, vec = eigen(Hermitian(H))
+    d = (val .≤ energy_thr |> Int) |> Diagonal
     return Hermitian(vec * d * vec')
 end
 
-function coord_operators(sz::NTuple{2,Integer}; symmetric::Bool=true, type::Type{T}=Float64)::NTuple{2,Matrix{T}} where T <: Real
+function coord_operators(sz::N{NTuple{2,Integer}}=nothing; 
+    symmetric::Bool=true, type::Type{T}=Float64)::NTuple{2,Matrix{T}} where T <: Real
+    sz = _try_get_sz(sz)
     len = prod(sz)
     operators = []
     for axis in 1:2
@@ -20,7 +22,8 @@ function coord_operators(sz::NTuple{2,Integer}; symmetric::Bool=true, type::Type
     return Tuple(operators)
 end
 
-function currents(H::AbstractMatrix{<:Complex{T}}, sz::NTuple{2,Integer}, P::AbstractMatrix{<:Complex{T}}) where T <: Real
+function currents(H::AbstractMatrix{Complex{T}}, P::AbstractMatrix{Complex{T}}, sz::N{NTuple{2,Integer}}=nothing) where T <: Real
+    sz = _try_get_sz(sz)
     currents_mat = zeros(prod(sz), prod(sz))
     for i in 1:prod(sz), j in 1:(i - 1)
         if dist(sz, i, j) == 1
