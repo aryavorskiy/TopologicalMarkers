@@ -2,7 +2,7 @@ using LinearAlgebra
 
 function filled_projector(H::Matrix{<:Complex{<:Real}}, energy_thr::Real=0)
     val, vec = eigen(Hermitian(H))
-    d = (val .≤ energy_thr |> Int) |> Diagonal
+    d = (val .≤ energy_thr) .|> Int |> Diagonal
     return Hermitian(vec * d * vec')
 end
 

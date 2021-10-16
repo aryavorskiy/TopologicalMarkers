@@ -1,12 +1,15 @@
 @testset "LCM current macros" begin
     js_lambda::Function
+    get_ham(_) = ham_b
     @evolution [
         :ham => get_ham => current_ham,
         P => get_ham => P_ev
     ] for t in time_domain
         js_lambda = @J_best current_ham, P_ev, X, Y
         js = [js_lambda(i, j) for i in 1:prod(siz), j in 1:prod(siz)]
-        @assert maximum(js + js') < 1e-10
+        js2 = @currents js_lambda
+        @test maximum(js + js') < 1e-10
+        @test maximum(js - js2) < 1e-10
         global deriv_c = zeros(Float64, siz)
         for i in 1:prod(siz)
             local site = index_to_pair(siz, i)
