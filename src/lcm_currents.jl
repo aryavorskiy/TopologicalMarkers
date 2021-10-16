@@ -105,3 +105,25 @@ macro J(H, P, X, Y)
         curr_inv(i, j) = jc(i, j) + jm(i, j)
     end
 end
+
+macro currents(call)
+    if !(call isa Expr) || call.head != :macrocall
+        return quote
+            J = $(esc(call))
+            [J(i, j) for i in 1:prod(_current_size), j in 1:prod(_current_size)]
+        end
+    end
+    _size = :(prod(_current_size))
+
+    for arg in (call.args[2:end])
+        if arg isa Union{Symbol,Expr}
+            _size = :(Base.round(Int, Base.size($arg)[1] / 2))
+            break
+        end
+    end
+
+    quote
+        J = $(esc(call))
+        [J(i, j) for i in 1:$(esc(_size)), j in 1:$(esc(_size))]
+    end
+end
