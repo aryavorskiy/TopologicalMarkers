@@ -1,7 +1,7 @@
 @testset "Field macros" begin
     B = 1
     p = (3, 4)
-    q * (6, 5)
+    q = (6, 5)
     
     @testset "Landau gauge" begin
         A1 = @landau 1
