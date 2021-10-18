@@ -1,15 +1,16 @@
 module TopologicalMarkers
 
-# TODO finish bugfixes, write docs, tests
-# TODO new features: plot_arranged keyword arguments for plots, a file with marker calculators
+# TODO finish bugfixes and tests, write docs
+# TODO new features: a file with marker calculators
 
 export hamiltonian, field!, zones!, # hamiltonian.jl
     filled_projector, coord_operators, currents, # operators.jl
     @evolution, evolution_operator, # evolution.jl
-    CoordinateRepr, # utils.jl
-    heatmap_data, quiver_data, quiver_currents!, plot_boundaries!, plot_arranged, # visual.jl
-    @J_c, @J_m, @J, @J_eq, @J_inv, @J_best, @currents, # lcm_currents.jl
-    @landau, @symm # field.jl
+    CoordinateRepr, pair_to_index, adjacent_sites, # utils.jl
+    heatmap_data, quiver_data, quiver_currents!, plot_boundaries!, optimal_layout, plot_marker!, plot_auto, # visual.jl
+    @J_c, @J_m, @J, @J_m_inv, @J_eq, @J_inv, @J_best, @currents, # lcm_currents.jl
+    @landau, @symm, # field.jl
+    local_chern, streda_p # markers.jl
 
 include("utils.jl")
 
@@ -19,4 +20,5 @@ include("evolution.jl")
 include("visual.jl")
 include("lcm_currents.jl")
 include("field.jl")
+include("markers.jl")
 end # module

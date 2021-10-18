@@ -12,6 +12,7 @@ let store = Dict()
     end
 end
 
+# TODO FIXME progressbar does not disappear in the end
 function _expand(chain::Expr)
     @assert chain.head == :call
     @assert chain.args[1] == :(=>)

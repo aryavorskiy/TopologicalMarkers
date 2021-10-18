@@ -53,7 +53,7 @@ dist(sz, i, j) = norm(index_to_pair(sz, i) - index_to_pair(sz, j))
 function adjacent_sites(sz::NTuple{2,Integer}, site::Vector{Integer}, order::Integer)
     adj = Set()
     for i in 0:order, sig1 in (-1, 1), sig2 in (-1, 1)
-        new_site = @. site + (i * sig1, order - i) * sig2
+        new_site = @. site + [i * sig1, order - i] * sig2
         if all(@. 0 < new_site < sz)
             push!(adj, new_site)
         end
