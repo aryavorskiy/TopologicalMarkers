@@ -1,7 +1,6 @@
 module TopologicalMarkers
 
 # TODO finish bugfixes and tests, write docs
-# TODO new features: a file with marker calculators
 
 export hamiltonian, field!, zones!, # hamiltonian.jl
     filled_projector, coord_operators, currents, # operators.jl
@@ -13,12 +12,12 @@ export hamiltonian, field!, zones!, # hamiltonian.jl
     local_chern, streda_p # markers.jl
 
 include("utils.jl")
-
-include("hamiltonian.jl")
+include("visual.jl")
 include("operators.jl")
 include("evolution.jl")
-include("visual.jl")
-include("lcm_currents.jl")
+include("plot.jl")
+include("hamiltonian.jl")
 include("field.jl")
-include("markers.jl")
+include(joinpath("formulas", "lcm_currents.jl"))
+include(joinpath("formulas", "markers.jl"))
 end # module
