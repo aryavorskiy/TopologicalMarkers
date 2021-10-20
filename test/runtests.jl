@@ -19,10 +19,14 @@ println("done.")
     P_b = filled_projector(ham_b)
     curr_b = currents(ham_b, P_b) / B
     streda = (P - P_b) / B
-    plot_arranged("Streda" => heatmap_data(streda, siz) => curr_b)
+    plot_auto("Streda" => heatmap_data(streda, siz) => curr_b)
 
     global X, Y = coord_operators()
-    plot_arranged("Streda" => streda => curr_b,
+    plot_auto("Streda" => streda => curr_b,
+    "LCM" => 4π * im * P * X * P * Y * P,
+    control_site=(8, 8), lattice_size=siz)
+    print("Plot timing: ")
+    @time plot_auto("Streda" => streda => curr_b,
     "LCM" => 4π * im * P * X * P * Y * P,
     control_site=(8, 8), lattice_size=siz)
 end

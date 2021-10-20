@@ -1,7 +1,6 @@
-import Base:getindex, size, +, -, *, /
 using RecipesBase
 
-N{T} = Union{T, Nothing}
+N{T} = Union{T,Nothing}
 
 # Pauli matrices
 const σ_x = [0 1; 1 0]
@@ -9,33 +8,6 @@ const σ_y = [0 -1im; 1im 0]
 const σ_z = [1 0; 0 -1]
 const E = [1 0; 0 1]
 const σ = [σ_x, σ_y, σ_z]
-
-# Coordinate representation
-
-struct CoordinateRepr{T}
-    _inner_mat::Matrix{T}
-end
-
-function CoordinateRepr(mat::Matrix{T}, indexing_type::Symbol) where T <: Real
-    if indexing_type ∈ (:c, :coord)
-        CoordinateRepr(copy(mat))
-    elseif indexing_type ∈ (:n, :natural)
-        CoordinateRepr(mat[end:-1:1, :] |> transpose |> Matrix)
-    else
-        error("Unsupported indexing type $indexing_type")
-    end
-end
-
-size(coord::CoordinateRepr) = size(coord._inner_mat)
-
-getindex(coord::CoordinateRepr, args...) = getindex(coord._inner_mat, args...)
-
-@recipe f(::Type{T}, val::T) where T <: CoordinateRepr = val._inner_mat |> transpose
-
-+(c1::CoordinateRepr, c2::CoordinateRepr) = CoordinateRepr(c1._inner_mat + c2._inner_mat)
--(c1::CoordinateRepr, c2::CoordinateRepr) = CoordinateRepr(c1._inner_mat - c2._inner_mat)
-*(c1::CoordinateRepr, a::Number) = CoordinateRepr(c1._inner_mat * a)
-/(c1::CoordinateRepr, a::Number) = CoordinateRepr(c1._inner_mat / a)
 
 # Pair-index conversion
 
@@ -53,7 +25,7 @@ dist(sz, i, j) = norm(index_to_pair(sz, i) - index_to_pair(sz, j))
 function adjacent_sites(sz::NTuple{2,Integer}, site::Vector{Integer}, order::Integer)
     adj = Set()
     for i in 0:order, sig1 in (-1, 1), sig2 in (-1, 1)
-        new_site = @. site + (i * sig1, order - i) * sig2
+        new_site = @. site + [i * sig1, order - i] * sig2
         if all(@. 0 < new_site < sz)
             push!(adj, new_site)
         end
