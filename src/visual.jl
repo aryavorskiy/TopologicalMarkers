@@ -29,7 +29,7 @@ setindex!(coord::CoordinateRepr, args...) = setindex!(coord._inner_mat, args...)
 *(c1::CoordinateRepr, a::Number) = CoordinateRepr(c1._inner_mat * a)
 /(c1::CoordinateRepr, a::Number) = CoordinateRepr(c1._inner_mat / a)
 
-function heatmap_data(op::AbstractMatrix{<:Complex{T}}, sz::N{NTuple{2,Integer}}=nothing)::CoordinateRepr{T} where T <: Real
+function heatmap_data(op::AbstractMatrix{<:Complex{T}}, sz::N{NTuple{2,Integer}})::CoordinateRepr{T} where T <: Real
     sz = _try_get_sz(sz)
     markers = zeros(T, sz)
     for i in 1:prod(sz)
@@ -37,6 +37,8 @@ function heatmap_data(op::AbstractMatrix{<:Complex{T}}, sz::N{NTuple{2,Integer}}
     end
     return CoordinateRepr(markers, :c)
 end
+
+heatmap_data(op) = heatmap_data(op, nothing)
 
 # Arrow visualization
 
@@ -51,13 +53,14 @@ function _arrow_data(sz::NTuple{2,Integer}, cur::Real, i::Integer, j::Integer)
     return Tuple(site), Tuple(vec)
 end
 
-function quiver_data(currents_mat::AbstractMatrix{<:Real}, sz::N{NTuple{2,Integer}}=nothing; threshold::Real=0.1, dist_threshold::Real=Inf)
+function quiver_data(currents_mat::AbstractMatrix{<:Real}, sz::N{NTuple{2,Integer}}=nothing; threshold::Real=0.1, dist_threshold::Real=Inf,
+    xlims::NTuple{2, <:Real}=(-Inf, Inf), ylims::NTuple{2, <:Real}=(-Inf, Inf))
     sz = _try_get_sz(sz)
     ps = Vector{NTuple{2,<:Integer}}()
     qs = Vector{NTuple{2,<:Real}}()
     for i in 1:prod(sz), j in 1:(i - 1)
         p, q = _arrow_data(sz, currents_mat[i, j], i, j)
-        if norm(q) > threshold && dist(sz, i, j) < dist_threshold
+        if norm(q) > threshold && dist(sz, i, j) < dist_threshold && (xlims[1] < p[1] < xlims[2]) && (ylims[1] < p[2] < ylims[2])
             push!(ps, p)
             push!(qs, q)
         end 

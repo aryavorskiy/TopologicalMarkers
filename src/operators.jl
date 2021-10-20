@@ -6,7 +6,7 @@ function filled_projector(H::Matrix{<:Complex{<:Real}}, energy_thr::Real=0)
     return Hermitian(vec * d * vec')
 end
 
-function coord_operators(sz::N{NTuple{2,Integer}}=nothing; 
+function coord_operators(sz::N{NTuple{2,Integer}}; 
     symmetric::Bool=true, type::Type{T}=Float64)::NTuple{2,Matrix{T}} where T <: Real
     sz = _try_get_sz(sz)
     len = prod(sz)
@@ -21,6 +21,8 @@ function coord_operators(sz::N{NTuple{2,Integer}}=nothing;
     end
     return Tuple(operators)
 end
+
+coord_operators(; kw...) = coord_operators(nothing; kw...)
 
 function currents(H::AbstractMatrix{Complex{T}}, P::AbstractMatrix{Complex{T}}, sz::N{NTuple{2,Integer}}=nothing) where T <: Real
     sz = _try_get_sz(sz)
