@@ -25,6 +25,10 @@ println("done.")
     plot_auto("Streda" => streda => curr_b,
     "LCM" => 4π * im * P * X * P * Y * P,
     control_site=(8, 8), lattice_size=siz)
+    print("Plot timing: ")
+    @time plot_auto("Streda" => streda => curr_b,
+    "LCM" => 4π * im * P * X * P * Y * P,
+    control_site=(8, 8), lattice_size=siz)
 end
 
 include("operator_test.jl")

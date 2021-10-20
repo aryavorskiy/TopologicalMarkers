@@ -1,6 +1,7 @@
 module TopologicalMarkers
 
 # TODO finish bugfixes and tests, write docs
+# TODO profile and optimize plot_auto
 
 export hamiltonian, field!, zones!, # hamiltonian.jl
     filled_projector, coord_operators, currents, # operators.jl
