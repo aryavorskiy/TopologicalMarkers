@@ -12,7 +12,7 @@ export hamiltonian, field!, zones!, # hamiltonian.jl
     CoordinateRepr, heatmap_data, quiver_data, # visual.jl
     plot_boundaries!, optimal_layout, plot_marker!, plot_auto, # plot.jl
     @J_c, @J_m, @J, @J_m_inv, @J_eq, @J_inv, @J_best, @currents, # lcm_currents.jl
-    @landau, @symm, # field.jl
+    @landau, @symm, @flux, # field.jl
     local_chern, streda_p # markers.jl
 
 include("utils.jl")

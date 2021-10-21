@@ -7,6 +7,19 @@ mutable struct CoordinateRepr{T}
     _inner_mat::Matrix{T}
 end
 
+"""
+    CoordinateRepr{T}
+
+A wrapper class for matrices to be conveniently plotted. 
+
+# Arguments
+- `lattice`: A matrix representing some quantity defined on the lattice (e. g. the LCM).
+- `repr_spec`: A symbol defining the way how the lattice sites match the matrix values:
+    - `:c` or `:coord`: The value for `(x, y)` site is `A[x, y]`. This is the default value.
+    - `:n` of `:natural`: If you print out the matrix as you usually do, and then imagine 
+    a coordinate system with its center in the bottom-left corner, this will be the mapping between
+    sites and matrix values.
+"""
 function CoordinateRepr(lattice::Matrix{T}, repr_spec::Symbol) where T
     if repr_spec ∈ (:c, :coord)
         CoordinateRepr(copy(lattice))
@@ -29,6 +42,15 @@ setindex!(coord::CoordinateRepr, args...) = setindex!(coord._inner_mat, args...)
 *(c1::CoordinateRepr, a::Number) = CoordinateRepr(c1._inner_mat * a)
 /(c1::CoordinateRepr, a::Number) = CoordinateRepr(c1._inner_mat / a)
 
+@doc raw"""
+    heatmap_data(op[, lattice_size])
+
+Generates a CoordinateRepr for values like $\langle r | \hat{\mathcal{Op}} | r \rangle$.
+
+# Arguments
+- `op`: the operator to find values for
+- `lattice_size`: the size of the lattice
+"""
 function heatmap_data(op::AbstractMatrix{<:Complex{T}}, lattice_size::N{NTuple{2,Integer}})::CoordinateRepr{T} where T <: Real
     lattice_size = _try_get_lattice_size(lattice_size)
     markers = zeros(T, lattice_size)
@@ -53,6 +75,19 @@ function _arrow_data(lattice_size::NTuple{2,Integer}, cur::Real, i::Integer, j::
     return Tuple(site), Tuple(vec)
 end
 
+"""
+    quiver_data(currents_mat[, lattice_size]; <keyword arguments>)
+
+Generates data for a quiver plot using a matrix with currents.
+The output is a tuple of two vectors with equal length: one contains arrow origins, the other one - arrow vectors.
+
+# Arguments
+- `currents_mat`: a matrix with currents
+- `lattice_size`: the size of the lattice
+- `threshold`: minimum value of the current to be put to output. Default is `0.1`.
+- `dist_threshold`: maximum distance between sites for which the current will be evaluated. Infinite by default.
+- `xlims` and `ylims`: limit the area in which the currents will be evaluated. Infinite by default.
+"""
 function quiver_data(currents_mat::AbstractMatrix{<:Real}, lattice_size::N{NTuple{2,Integer}}=nothing; threshold::Real=0.1, dist_threshold::Real=Inf,
     xlims::NTuple{2, <:Real}=(-Inf, Inf), ylims::NTuple{2, <:Real}=(-Inf, Inf))
     lattice_size = _try_get_lattice_size(lattice_size)
