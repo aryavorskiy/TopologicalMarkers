@@ -36,6 +36,24 @@ println("done.")
         currs = @currents @J_best ham_b P X Y
         plot_marker!(pl, hmap=4π * im * P * X * P * Y * P, currents=currs, xlims=(6,10), ylims=(8, 12))
     end
+
+    @testset "Density currents" begin
+        ms = CoordinateRepr(ones(15, 15))
+        Bf = 0.01
+        τ = 30
+
+        H0 = hamiltonian(ms)
+        P0 = filled_projector(H0)
+        h(t) = hamiltonian(ms, field=@landau(Bf * t / τ))
+
+        @evolution [
+            :ham => h => H,
+            P0 => h => P
+        ] for t in 0:1:τ
+            cur = currents(H, P)
+            plot_auto("f" => P => cur * 10, clims=(0.98, 1.02))
+        end
+    end
 end
 include("operator_test.jl")
 include("field_test.jl")

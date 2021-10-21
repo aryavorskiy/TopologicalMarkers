@@ -20,8 +20,8 @@ end
 plot_boundaries!(zone_mapping::AbstractMatrix; kw...)::Plots.Plot =
     plot_boundaries!(current(), zone_mapping; kw...)
 
-_unchain_arg(arg)::Vector{Any} = 
-    arg isa Pair ? [_unchain_arg(arg.first)..., _unchain_arg(arg.second)...] : [arg]
+_unchain_arg(arg) = 
+    arg isa Pair ? Any[_unchain_arg(arg.first)..., _unchain_arg(arg.second)...] : Any[arg]
 
 function _expand_arg(arg, lattice_size)
     mat_type = Union{AbstractMatrix,CoordinateRepr}
