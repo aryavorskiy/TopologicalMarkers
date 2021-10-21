@@ -5,9 +5,10 @@
     a = CoordinateRepr(ms, :n)
     h = hamiltonian(a)
     field!(h, x -> [0, x[1], 0])
-    zmap = ones(3, 3)
-    zmap[2,2] = 2
+    zmap = fill(:ext, 3, 3)
+    zmap[2,2] = :Int
     zones!(h, CoordinateRepr(zmap))
+    zones!(h, zmap, :n)
 end
 
 @testset "Currents test" begin

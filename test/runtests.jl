@@ -12,9 +12,9 @@ println("done.")
     @testset "Static LCM" begin
         siz = (15, 15)
         global B = 1e-8
-        ms = CoordinateRepr(ones(siz) * -1)
-        global ham = hamiltonian(ms)
-        global ham_b = hamiltonian(ms, field=@symm(B))
+        ms = ones(siz) * -1
+        global ham = hamiltonian(ms, :c)
+        global ham_b = hamiltonian(CoordinateRepr(ms), field=@symm(B))
         # field!(ham_b, @symm(B))
 
         global P = filled_projector(ham)
@@ -28,7 +28,7 @@ println("done.")
         "LCM" => 4π * im * P * X * P * Y * P,
         control_site=(8, 8), lattice_size=siz)
         print("Auto plot timing: ")
-        @time plot_auto("Streda" => streda => curr_b,
+        @time plot_auto(streda => curr_b,
         "LCM" => 4π * im * P * X * P * Y * P,
         control_site=(8, 8), lattice_size=siz)
 

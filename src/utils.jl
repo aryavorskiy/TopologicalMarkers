@@ -11,22 +11,22 @@ const σ = [σ_x, σ_y, σ_z]
 
 # Pair-index conversion
 
-pair_to_index(sz::NTuple{2,Integer}, a::Integer, b::Integer) = (b - 1) % sz[2] * sz[1] + (a - 1) % sz[1] + 1
+pair_to_index(lattice_size::NTuple{2,Integer}, a::Integer, b::Integer) = (b - 1) % lattice_size[2] * lattice_size[1] + (a - 1) % lattice_size[1] + 1
 
-pair_to_index(sz::NTuple{2,Integer}, pair::Vector{Integer}) = pair_to_index(sz, pair[1], pair[2])
+pair_to_index(lattice_size::NTuple{2,Integer}, pair::Vector{Integer}) = pair_to_index(lattice_size, pair[1], pair[2])
 
-function index_to_pair(sz::NTuple{2,Integer}, i::Integer)::Vector{Integer}
-    a = i % sz[1] == 0 ? sz[1] : i % sz[1]
-    return [a, round(Integer, (i - a) / sz[1]) + 1]
+function index_to_pair(lattice_size::NTuple{2,Integer}, i::Integer)::Vector{Integer}
+    a = i % lattice_size[1] == 0 ? lattice_size[1] : i % lattice_size[1]
+    return [a, round(Integer, (i - a) / lattice_size[1]) + 1]
 end
 
-dist(sz, i, j) = norm(index_to_pair(sz, i) - index_to_pair(sz, j))
+dist(lattice_size, i, j) = norm(index_to_pair(lattice_size, i) - index_to_pair(lattice_size, j))
 
-function adjacent_sites(sz::NTuple{2,Integer}, site::Vector{Integer}, order::Integer)
+function adjacent_sites(lattice_size::NTuple{2,Integer}, site::Vector{Integer}, order::Integer)
     adj = Set()
     for i in 0:order, sig1 in (-1, 1), sig2 in (-1, 1)
         new_site = @. site + [i * sig1, order - i] * sig2
-        if all(@. 0 < new_site < sz)
+        if all(@. 0 < new_site < lattice_size)
             push!(adj, new_site)
         end
     end
@@ -34,7 +34,14 @@ function adjacent_sites(sz::NTuple{2,Integer}, site::Vector{Integer}, order::Int
 end
 
 # Progressbar
-function pbar(p::Real, len::Integer=60; fill::Char='#', empty::Char='-')
-    fill_len = round(Int, p * len)
-    return fill^fill_len * empty^(len - fill_len)
+let previous_pct = -1.
+    global function pbar(progress::Real, len::Integer=60; fill::Char='#', empty::Char='-')
+        fill_len = round(Int, progress * len)
+        pb = fill^fill_len * empty^(len - fill_len)
+        pct = round(progress * 100, digits=1)
+        if pct != previous_pct
+            print("\r [$pb] $pct%")
+            previous_pct = pct
+        end
+    end
 end
