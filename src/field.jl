@@ -9,7 +9,7 @@ Generates a function that returns the Landau gauge vector potential.
 """
 macro landau(B)
     quote
-        A(r) = [0, $(esc(B)) * r[1], 0]
+        @inline A(r::Vector{Float64})::Vector{Float64} = [0, $(esc(B)) * r[1]]
     end
 end
 
@@ -24,13 +24,13 @@ Generates a function that returns the symmetric gauge vector potential.
 macro symm(B, center=nothing)
     if center !== nothing
         return quote
-            local c = [$(esc(center))...] / 2
-            A(r) = [-r[2] + c[2], r[1] - c[1], 0] * $(esc(B)) / 2
+            local c = [$(esc(center))...]
+            @inline A(r::Vector{Float64})::Vector{Float64} = [-r[2] + c[2], r[1] - c[1]] * $(esc(B)) / 2
         end
     else 
         return quote
-            local c = [_current_lattice_size...] / 2
-            A(r) = [-r[2] + c[2], r[1] - c[1], 0] * $(esc(B)) / 2
+            local c = [(_current_lattice_size .- 1)...] / 2 .+ 1
+            @inline A(r::Vector{Float64})::Vector{Float64} = [-r[2] + c[2], r[1] - c[1]] * $(esc(B)) / 2
         end
     end
 end
@@ -46,13 +46,13 @@ Generates a function that returns the vector potential for a flux quantum.
 macro flux(Φ, center=nothing)
     if center !== nothing
         return quote
-            local c = [$(esc(center))...] / 2
-            A(r) = normalize([-r[2] + c[2], r[1] - c[1], 0]) * $(esc(Φ)) / 2
+            local c = [$(esc(center))...]
+            @inline A(r::Vector{Float64})::Vector{Float64} = normalize([-r[2] + c[2], r[1] - c[1]]) * $(esc(Φ))
         end
     else 
         return quote
-            local c = [_current_lattice_size...] / 2
-            A(r) = normalize([-r[2] + c[2], r[1] - c[1], 0]) * $(esc(Φ)) / 2
+            local c = [(_current_lattice_size .- 1)...] / 2 .+ 1
+            @inline A(r::Vector{Float64}) = normalize([-r[2] + c[2], r[1] - c[1]]) * $(esc(Φ))
         end
     end
 end

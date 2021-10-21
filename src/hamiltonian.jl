@@ -61,9 +61,9 @@ This integral is calculated explicitly for every hopping, using the `A` function
 - `intervals`: the number of intervals to use when calculating the Peierls substitution phase factor
 """
 function field!(H::AbstractMatrix{<:Complex}, A::Function, lattice_size::N{NTuple{2, Integer}} = nothing; intervals::Integer=10)
-    lattice_size = _try_get_lattice_size(lattice_size)
-    local function peierls(i, j)
-        phase = 0.
+    lattice_size = _try_get_lattice_size(lattice_size)        
+    local function peierls(i, j)::ComplexF64
+        phase::Float64 = 0
         r1 = index_to_pair(lattice_size, i)
         r2 = index_to_pair(lattice_size, j)
         dr = (r2 - r1) / intervals
@@ -75,12 +75,14 @@ function field!(H::AbstractMatrix{<:Complex}, A::Function, lattice_size::N{NTupl
     for i in 1:lattice_size[1], j in 1:lattice_size[2]
         i1 = pair_to_index(lattice_size, i, j)
         i2 = pair_to_index(lattice_size, i+1, j)
-        H[2 * i1 - 1:2 * i1, 2 * i2 - 1:2 * i2] *= peierls(i1, i2)
-        H[2 * i2 - 1:2 * i2, 2 * i1 - 1:2 * i1] *= peierls(i2, i1)
+        phase_mod = peierls(i1, i2)
+        H[2 * i1 - 1:2 * i1, 2 * i2 - 1:2 * i2] *= phase_mod
+        H[2 * i2 - 1:2 * i2, 2 * i1 - 1:2 * i1] *= phase_mod'
         
         i2 = pair_to_index(lattice_size, i, j+1)
-        H[2 * i1 - 1:2 * i1, 2 * i2 - 1:2 * i2] *= peierls(i1, i2)
-        H[2 * i2 - 1:2 * i2, 2 * i1 - 1:2 * i1] *= peierls(i2, i1)
+        phase_mod = peierls(i1, i2)
+        H[2 * i1 - 1:2 * i1, 2 * i2 - 1:2 * i2] *= phase_mod
+        H[2 * i2 - 1:2 * i2, 2 * i1 - 1:2 * i1] *= phase_mod'
     end
 end
 

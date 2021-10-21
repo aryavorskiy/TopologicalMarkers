@@ -120,7 +120,7 @@ The subplots are automatically arranged into an optimal layout.
 Each argument can be either a `CoordinateRepr` object or a chain of pairs.
 """
 function plot_auto(args...; layout=nothing, plot_size=nothing, zone_mapping::N{CoordinateRepr}=nothing, title="",
-     control_site=nothing, control_sites::AbstractVector{NTuple{2,Integer}}=Vector{NTuple{2,Integer}}(), clims=:auto, lattice_size=nothing, kw...)
+     control_site=nothing, control_sites::AbstractVector{NTuple{2,Integer}}=Vector{NTuple{2,Integer}}(), lattice_size=nothing, kw...)
     lattice_size = _try_get_lattice_size(lattice_size)
     sites = []
     if control_site !== nothing
@@ -142,6 +142,7 @@ function plot_auto(args...; layout=nothing, plot_size=nothing, zone_mapping::N{C
     p = plot(layout=layout, size=plot_size)
 
     marker_kw = _keys_by_prefix(kw, "marker")
+    slice_kw = _keys_by_prefix(kw, "slice")
 
     # Process args
     for i in 1:length(args)
@@ -151,7 +152,7 @@ function plot_auto(args...; layout=nothing, plot_size=nothing, zone_mapping::N{C
         for site_idx = 1:length(sites)
             site = sites[site_idx]
             p_slice = p[site_idx + length(args)];
-            plot!(p_slice, repr[:, site[2]], title="@ $site", lab=tit, ylim=(clims isa NTuple{2,<:Real} ? clims .* 2 : clims))
+            plot!(p_slice, repr[:, site[2]]; title="@ $site", lab=tit, slice_kw...)
             vline!(p_slice, )
             hline!(p[i], [site[2]]; lab=nothing, marker_kw...)
             plot!(p[i], [site]; st=:scatter, lab=nothing, marker_kw...)

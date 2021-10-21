@@ -69,8 +69,8 @@ function _arrow_data(lattice_size::NTuple{2,Integer}, cur::Real, i::Integer, j::
         i, j = j, i
         cur = -cur
     end
-    local site = index_to_pair(lattice_size, i)
-    local other = index_to_pair(lattice_size, j)
+    local site::Vector{Int} = index_to_pair(lattice_size, i)
+    local other::Vector{Int} = index_to_pair(lattice_size, j)
     local vec = normalize(other - site) * cur
     return Tuple(site), Tuple(vec)
 end
