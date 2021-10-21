@@ -110,10 +110,10 @@ macro currents(call)
     if !(call isa Expr) || call.head != :macrocall
         return quote
             J = $(esc(call))
-            [J(i, j) for i in 1:prod(_current_size), j in 1:prod(_current_size)]
+            [J(i, j) for i in 1:prod(_current_lattice_size), j in 1:prod(_current_lattice_size)]
         end
     end
-    _size = :(prod(_current_size))
+    _size = :(prod(_current_lattice_size))
 
     for arg in (call.args[2:end])
         if arg isa Union{Symbol,Expr}

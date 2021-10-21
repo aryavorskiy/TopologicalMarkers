@@ -28,7 +28,7 @@ println("done.")
         "LCM" => 4π * im * P * X * P * Y * P,
         control_site=(8, 8), lattice_size=siz)
         print("Auto plot timing: ")
-        @time plot_auto("Streda" => streda => curr_b,
+        @time plot_auto(streda => curr_b,
         "LCM" => 4π * im * P * X * P * Y * P,
         control_site=(8, 8), lattice_size=siz)
 

@@ -27,7 +27,7 @@ macro symm(B, center=nothing)
         end
     else 
         return quote
-            local c = [_current_size...] / 2
+            local c = [_current_lattice_size...] / 2
             A(r) = [-r[2] + c[2], r[1] - c[1], 0] * $(esc(B)) / 2
         end
     end

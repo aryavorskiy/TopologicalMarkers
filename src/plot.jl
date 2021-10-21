@@ -4,64 +4,66 @@ AbstractPlot = Union{Subplot,Plot}
 
 # Boundary visualization
 
-function plot_boundaries!(pl::AbstractPlot, zone_mapping::CoordinateRepr; kw...)::Plots.plot
-    local sz = size(zone_mapping)
-    for i in 1:sz[1] - 1, j in 1:sz[2] - 1
+function plot_boundaries!(pl::AbstractPlot, zone_mapping::CoordinateRepr; color=:black, kw...)::Plots.plot
+    local lattice_size = size(zone_mapping)
+    for i in 1:lattice_size[1] - 1, j in 1:lattice_size[2] - 1
         if zone_mapping[i, j] != zone_mapping[i + 1, j]
-            plot!(pl, [(i + 0.5, j - 0.5), (i + 0.5, j + 0.5)], lab="", kw...)
+            plot!(pl, [(i + 0.5, j - 0.5), (i + 0.5, j + 0.5)]; lab="", color=color, kw...)
         end
         if zone_mapping[i, j] != zone_mapping[i, j + 1]
-            plot!(pl, [(i - 0.5, j + 0.5), (i + 0.5, j + 0.5)], lab="", kw...)
+            plot!(pl, [(i - 0.5, j + 0.5), (i + 0.5, j + 0.5)]; lab="", color=color, kw...)
         end
     end
     return pl
 end
 
 plot_boundaries!(zone_mapping::AbstractMatrix; kw...)::Plots.Plot =
-    plot_boundaries!(current(), zone_mapping, kw...)
+    plot_boundaries!(current(), zone_mapping; kw...)
 
 _unchain_arg(arg)::Vector{Any} = 
     arg isa Pair ? [_unchain_arg(arg.first)..., _unchain_arg(arg.second)...] : [arg]
 
-function _expand_arg(arg, sz)
+function _expand_arg(arg, lattice_size)
     mat_type = Union{AbstractMatrix,CoordinateRepr}
-    _obtain_repr(obj) = obj isa AbstractMatrix ? heatmap_data(obj, sz) : obj
+    _obtain_repr(obj) = obj isa AbstractMatrix ? heatmap_data(obj, lattice_size) : obj
     mat::N{mat_type} = nothing
     tit::AbstractString = ""
     cur::N{AbstractMatrix} = nothing
 
     arg_list = _unchain_arg(arg)
-    if length(arg_list) == 1
-        mat = _obtain_repr(arg_list[1])
-    else
-        tit = arg_list[1]
-        mat = _obtain_repr(arg_list[2])
+    if arg_list[1] isa AbstractString
+        tit = popfirst!(arg_list)
     end
-    if length(arg_list) ≥ 3 && arg_list[3] isa AbstractMatrix
-        cur = arg_list[3]
+    if isempty(arg_list)
+        error("Missing plot data in argument")
     end
-    
+    if length(arg_list) > 2
+        error("Too long argument")
+    end
+    mat = _obtain_repr(arg_list[1])
+    if length(arg_list) > 1
+        cur = arg_list[2]
+    end
     return mat, tit, cur
 end
 
 # Optimal layout
 
-function _optimal_grid_size(plots_total::Integer, plot_aspect_ratio::NTuple{2,Integer}, cell_aspect_ratio::NTuple{2,Integer})
-    rows = round(Int, √(plots_total * plot_aspect_ratio[2] / plot_aspect_ratio[1] * cell_aspect_ratio[1] / cell_aspect_ratio[2]))
+function _optimal_grid_size(plots_total::Integer, plot_aspect_ratio::NTuple{2,Integer}, subplot_aspect_ratio::NTuple{2,Integer})
+    rows = round(Int, √(plots_total * plot_aspect_ratio[2] / plot_aspect_ratio[1] * subplot_aspect_ratio[1] / subplot_aspect_ratio[2]))
     rows = min(max(rows, 1), plots_total)
     cols = ceil(Int64, plots_total / rows)
 return rows, cols
 end
 
-function _optimal_size(plots_total::Integer; cell_size::NTuple{2,Integer}=(450, 350))
-    rows, cols = _optimal_grid_size(plots_total, cell_size, cell_size)
-    return cell_size[1] * cols, cell_size[2] * rows
+function _optimal_size(plots_total::Integer; subplot_size::NTuple{2,Integer}=(450, 350))
+    rows, cols = _optimal_grid_size(plots_total, subplot_size, subplot_size)
+    return subplot_size[1] * cols, subplot_size[2] * rows
 end
 
 
-function optimal_layout(plots_total::Integer; plot_size::N{NTuple{2,Integer}}=nothing, cell_size::NTuple{2,Integer}=(450, 350))
-    rows, cols = _optimal_grid_size(plots_total, plot_size === nothing ? cell_size : plot_size, cell_size)
-
+function optimal_layout(plots_total::Integer; plot_size::N{NTuple{2,Integer}}=nothing, subplot_size::NTuple{2,Integer}=(450, 350))
+    rows, cols = _optimal_grid_size(plots_total, plot_size === nothing ? subplot_size : plot_size, subplot_size)
     col_remainder = 1 - (rows * cols - plots_total) / cols
 
         if rows * cols == plots_total
@@ -84,9 +86,9 @@ function _keys_by_prefix(dct::Iterators.Pairs, prefix::AbstractString)
     return out
 end
 
-function plot_marker!(p::AbstractPlot; hmap=nothing, currents=nothing, zone_mapping=nothing, xlims=nothing, ylims=nothing,
-    lattice_size::N{NTuple{2,Integer}}=nothing, clims=:auto, kw...)
-    lattice_size = _try_get_sz(lattice_size)
+function plot_marker!(pl::AbstractPlot; hmap=nothing, currents=nothing, zone_mapping=nothing, xlims=nothing, ylims=nothing,
+    lattice_size::N{NTuple{2,Integer}}=nothing, kw...)
+    lattice_size = _try_get_lattice_size(lattice_size)
     hmap_kw = _keys_by_prefix(kw, "hmap")
     currs_kw = _keys_by_prefix(kw, "currents")
     bounds_kw = _keys_by_prefix(kw, "bounds")
@@ -94,18 +96,18 @@ function plot_marker!(p::AbstractPlot; hmap=nothing, currents=nothing, zone_mapp
     ylims = ylims !== nothing ? ylims : (0, lattice_size[2] + 1)
     if hmap != nothing
         obtain_repr(obj) = obj isa CoordinateRepr ? obj : heatmap_data(obj, lattice_size)
-        heatmap!(p, obtain_repr(hmap); clims=clims, cbar=:right, hmap_kw...)
+        heatmap!(pl, obtain_repr(hmap); hmap_kw...)
     end
     if zone_mapping !== nothing
-        plot_boundaries!(p, zone_mapping, color=:black; bounds_kw...)
+        plot_boundaries!(pl, zone_mapping; bounds_kw...)
     end
     if currents !== nothing
         ps, qs = quiver_data(currents, lattice_size, xlims=xlims, ylims=ylims)
-        quiver!(p, ps; quiver=qs, currs_kw...)
+        quiver!(pl, ps; quiver=qs, currs_kw...)
     end
 
-    xlims!(p, xlims)
-    ylims!(p, ylims)
+    xlims!(pl, xlims)
+    ylims!(pl, ylims)
 end
 
 """
@@ -119,7 +121,7 @@ Each argument can be either a `CoordinateRepr` object or a chain of pairs.
 """
 function plot_auto(args...; layout=nothing, plot_size=nothing, zone_mapping::N{CoordinateRepr}=nothing, title="",
      control_site=nothing, control_sites::AbstractVector{NTuple{2,Integer}}=Vector{NTuple{2,Integer}}(), clims=:auto, lattice_size=nothing, kw...)
-    lattice_size = _try_get_sz(lattice_size)
+    lattice_size = _try_get_lattice_size(lattice_size)
     sites = []
     if control_site !== nothing
         push!(sites, control_site)
@@ -145,7 +147,7 @@ function plot_auto(args...; layout=nothing, plot_size=nothing, zone_mapping::N{C
     for i in 1:length(args)
         repr, tit, cur = _expand_arg(args[i], lattice_size)
         plot!(p[i], title=tit)
-        plot_marker!(p[i]; hmap=repr, currents=cur, lattice_size=lattice_size, zone_mapping=zone_mapping, clims=clims, kw...)
+        plot_marker!(p[i]; hmap=repr, currents=cur, lattice_size=lattice_size, zone_mapping=zone_mapping, kw...)
         for site_idx = 1:length(sites)
             site = sites[site_idx]
             p_slice = p[site_idx + length(args)];

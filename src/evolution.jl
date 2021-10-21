@@ -1,7 +1,7 @@
 using LinearAlgebra
 
 let store = Dict()
-    global function evolution_operator(H, t)
+    global function evolution_operator(H::AbstractMatrix{<:Complex{<:Real}}, t::Real)
         if length(store) > 200
             store = Dict()
         end
@@ -12,7 +12,6 @@ let store = Dict()
     end
 end
 
-# TODO FIXME progressbar does not disappear in the end
 function _expand(chain::Expr)
     @assert chain.head == :call
     @assert chain.args[1] == :(=>)
@@ -71,9 +70,7 @@ macro evolution(evolvers, loop)
         local l = 60
         local counter = 0
         for $(esc(loop_var)) in $(esc(loop_range))
-            pc = counter / len
-            print("\r [$(pbar(pc))] $(round(Int, pc * 100)) %")
-
+            pbar(counter / len, l)
             local dt = $(esc(loop_var)) - t_inner
             $p_evolvers
             $h_evaluated
