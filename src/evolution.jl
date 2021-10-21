@@ -1,11 +1,24 @@
 using LinearAlgebra
 
+EVOL_STORED_SZ = 200
+
 let store = Dict()
+@doc raw"""
+    evolution_operator(H, t)
+
+Calculates the unitary evolution operator using the formula
+
+$ \mathcal{U}(t) = e^{-\frac{1}{i\hbar} \hat{H} t} $
+
+# Arguments
+- `H`: the hamiltonian matrix.
+- `t`: the evolution time
+"""
     global function evolution_operator(H::AbstractMatrix{<:Complex{<:Real}}, t::Real)
-        if length(store) > 200
-            store = Dict()
-        end
         if (H, t) ∉ keys(store)
+            if length(store) > EVOL_STORED_SZ
+                store = Dict()
+            end
             store[(H, t)] = exp(im * H * t)
         end
         return store[(H, t)]
@@ -22,7 +35,13 @@ function _expand(chain::Expr)
     return members
 end
 
-macro evolution(evolvers, loop)
+"""
+    @evolution [rules...] for_loop
+
+Generates an environment with defined hamiltonian and density matrices that evolve by certain laws.
+See [Unitary evolution](docs/evolution.md) for more details.
+"""
+macro evolution(rules, loop)
     if typeof(loop) != Expr || loop.head != :for
         error("Expression type should be 'for', not '$(loop.head)'")
     end
@@ -33,11 +52,11 @@ macro evolution(evolvers, loop)
     p_evolvers = quote end
     h_evaluated = quote end
     
-    if typeof(evolvers) != Expr || evolvers.head ∉ (:vect, :vcat, :hcat, :braces, :bracescat)
+    if typeof(rules) != Expr || rules.head ∉ (:vect, :vcat, :hcat, :braces, :bracescat)
         error("Evolution specifier should be iterable, not '$(loop.head)'")
     end
     
-    for statement in evolvers.args
+    for statement in rules.args
         if typeof(statement) == LineNumberNode
             continue
         elseif typeof(statement) == Expr

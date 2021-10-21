@@ -25,8 +25,8 @@ _unchain_arg(arg)::Vector{Any} =
 
 function _expand_arg(arg, lattice_size)
     mat_type = Union{AbstractMatrix,CoordinateRepr}
-    _obtain_repr(obj) = obj isa AbstractMatrix ? heatmap_data(obj, lattice_size) : obj
-    mat::N{mat_type} = nothing
+    _obtain_repr(obj) = obj isa CoordinateRepr ? obj : heatmap_data(obj, lattice_size)
+    mat::N{CoordinateRepr} = nothing
     tit::AbstractString = ""
     cur::N{AbstractMatrix} = nothing
 

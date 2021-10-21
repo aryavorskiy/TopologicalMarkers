@@ -45,7 +45,22 @@ function _hamiltonian(dtype::Type{T}, m_repr::CoordinateRepr, pbc::Tuple{Bool, B
     return H
 end
 
-function field!(H::AbstractMatrix{<:Complex{<:Real}}, A::Function, lattice_size::N{NTuple{2, Integer}} = nothing; intervals::Integer=10)
+@doc raw"""
+    field!(H, A[, lattice_size]; intervals = 10)
+
+Applies magnetic field to specified hamiltonian. In other words, all hoppings get multiplied on a specific phase factor that can be calculated using Peierls substitution:
+
+$ \varphi_{ij} = \frac{1}{2\pi} \int_i^j A(r) \cdot dr $
+
+This integral is calculated explicitly for every hopping, using the `A` function.
+
+# Arguments
+- `H`: the hamiltonian matrix.
+- `A`: a function that takes a `Vector` representing a point and returns a `Vector` representing the vector potential in that point.
+- `lattice_size`: the size of the lattice the hamiltonian is defined for. If not provided, this function will use the value for the hamiltonian matrix that was created last.
+- `intervals`: the number of intervals to use when calculating the Peierls substitution phase factor
+"""
+function field!(H::AbstractMatrix{<:Complex}, A::Function, lattice_size::N{NTuple{2, Integer}} = nothing; intervals::Integer=10)
     lattice_size = _try_get_lattice_size(lattice_size)
     local function peierls(i, j)
         phase = 0.
@@ -69,7 +84,17 @@ function field!(H::AbstractMatrix{<:Complex{<:Real}}, A::Function, lattice_size:
     end
 end
 
-function zones!(H::AbstractMatrix{<:Complex{<:Real}}, zone_mapping::CoordinateRepr)
+"""
+    zones!(H, zone_mapping[, repr_spec])
+
+Divides the Chern insulator hamiltonian into several unconnected zones. The hoppings between these zones are erased.
+
+# Arguments
+- `H`: the hamiltonian matrix.
+- `zone_mapping`: an `AbstractMatrix{Symbol}` or `CoordinateRepr{Symbol}`. Each site is mapped to a symbol, different symbols mean different zones.
+- `repr_spec`: if `zone_mapping` is an `AbstractMatrix{Symbol}`, this argument is a representation specifier (see `CoordinateRepr` docs for more information).
+"""
+function zones!(H::AbstractMatrix{<:Complex{<:Real}}, zone_mapping::CoordinateRepr{Symbol})
     lattice_size = size(zone_mapping)
     E = zeros(2, 2)
     for i in 1:lattice_size[1]
@@ -87,8 +112,11 @@ function zones!(H::AbstractMatrix{<:Complex{<:Real}}, zone_mapping::CoordinateRe
     end
 end
 
+zones!(H::AbstractMatrix{<:Complex}, zone_mapping::AbstractMatrix{Symbol}, repr_spec::Symbol) = 
+    zones!(H, CoordinateRepr(zone_mapping, repr_spec))
+
 @doc raw"""
-    hamiltonian([m_repr | m_lattice, repr_spec = :coord]; <keyword arguments>)
+    hamiltonian((m_repr | m_lattice, repr_spec); <keyword arguments>)
 
 Generates a Hamiltonian operator for a Chern insulator using the following formula
 
@@ -100,7 +128,7 @@ h. c.$
 
 # Arguments
 - `m_repr`: The value of `m` on different sites, in `CoordinateRepr` format. 
-Alternatively, pass a matrix and a representation specifier (see `CoordinateRepr` docs for more information).
+Alternatively, pass a matrix and a representation specifier (see `CoordinateRepr` for more information).
 - `type`: Element type of the hamiltonian matrix. Default is `Float64`.
 - `pbc`: Periodic boundary conditions. A `Tuple{Bool, Bool}`, each element sets boundary conditions for the horizontal and vertical edge respectively. Default is `(false, false)`.
 - `zones`: A matrix with elements of arbitrary type, which maps sites to isolated zones. The hopping members between different zones are erased. There are no isolated zones by default.

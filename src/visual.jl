@@ -7,11 +7,11 @@ mutable struct CoordinateRepr{T}
     _inner_mat::Matrix{T}
 end
 
-function CoordinateRepr(lattice::Matrix{T}, repr_spec::Symbol) where T <: Real
+function CoordinateRepr(lattice::Matrix{T}, repr_spec::Symbol) where T
     if repr_spec ∈ (:c, :coord)
         CoordinateRepr(copy(lattice))
     elseif repr_spec ∈ (:n, :natural)
-        CoordinateRepr(lattice[end:-1:1, :] |> transpose |> Matrix)
+        CoordinateRepr(permutedims(lattice[end:-1:1, :], (2, 1)) |> Matrix)
     else
         error("Unsupported indexing type $repr_spec")
     end

@@ -1,3 +1,11 @@
+"""
+    @landau(B[, zone])
+Generates a function that returns the Landau gauge vector potential.
+
+# Arguments
+- `B`: the magnetic field value
+- `zone`: a `NTuple{2, Any}` which describes the part of the space where the field is present.
+"""
 macro landau(B, zone=:(:all, :all))
     zone_check = :(true)
     if zone isa Expr && zone.head != :tuple
@@ -19,6 +27,14 @@ macro landau(B, zone=:(:all, :all))
     end
 end
 
+"""
+    @symm(B[, center])
+Generates a function that returns the symmetric gauge vector potential.
+
+# Arguments
+- `B`: the value of magnetic field
+- `center`: the center of symmetry of the vector potential
+"""
 macro symm(B, center=nothing)
     if center !== nothing
         return quote

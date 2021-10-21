@@ -12,9 +12,9 @@ println("done.")
     @testset "Static LCM" begin
         siz = (15, 15)
         global B = 1e-8
-        ms = CoordinateRepr(ones(siz) * -1)
-        global ham = hamiltonian(ms)
-        global ham_b = hamiltonian(ms, field=@symm(B))
+        ms = ones(siz) * -1
+        global ham = hamiltonian(ms, :c)
+        global ham_b = hamiltonian(CoordinateRepr(ms), field=@symm(B))
         # field!(ham_b, @symm(B))
 
         global P = filled_projector(ham)
