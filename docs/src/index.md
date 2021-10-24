@@ -2,7 +2,13 @@
 
 A package that simplifies calculation of different topological markers.
 
-```julia
+Here is an example: let us take a Chern insulator, set the $m$ parameter to $-1$ in the middle of the lattice and $1$ everywhere else,
+and then evaluate the local Chern marker using both traditional and Streda formulas:
+
+```@example
+using TopologicalMarkers
+using Plots
+
 m_lattice = ones(25, 25)
 m_lattice[6:10, 6:10] .= -1
 H = hamiltonian(m_lattice, :c)
@@ -17,8 +23,9 @@ str = (Pb - P) / B
 
 plot_auto("LCM" => ch, "Streda" => str, 
     hmapclims=(-1.5, 1.5), currentscolor=:yellow, control_site=(8, 8), markercolor=:brown)
+savefig("example.png"); nothing # hide
 ```
 
-The code here woll produce the following graph:
+The code here will produce the following graph:
 
-![](example.svg)
+![](example.png)

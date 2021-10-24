@@ -2,7 +2,7 @@ using LinearAlgebra: normalize
 
 """
     @landau(B)
-Generates a function that returns the Landau gauge vector potential.
+Generates a function that returns the Landau gauge vector potential. This can be used as an argument for the `field!` function.
 
 # Arguments
 - `B`: the magnetic field value
@@ -15,7 +15,7 @@ end
 
 """
     @symm(B[, center])
-Generates a function that returns the symmetric gauge vector potential.
+Generates a function that returns the symmetric gauge vector potential. This can be used as an argument for the `field!` function.
 
 # Arguments
 - `B`: the value of magnetic field
@@ -37,7 +37,7 @@ end
 
 """
     flux(Φ[, center])
-Generates a function that returns the vector potential for a flux quantum.
+Generates a function that returns the vector potential for a flux quantum. This can be used as an argument for the `field!` function.
 
 # Arguments
 - `B`: the value of magnetic field

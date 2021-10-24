@@ -50,7 +50,7 @@ end
 
 Applies magnetic field to specified hamiltonian. In other words, all hoppings get multiplied on a specific phase factor that can be calculated using Peierls substitution:
 
-$ \varphi_{ij} = \frac{1}{2\pi} \int_i^j A(r) \cdot dr $
+$\varphi_{ij} = 2\pi \int_i^j A(r) \cdot dr$
 
 This integral is calculated explicitly for every hopping, using the `A` function.
 

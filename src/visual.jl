@@ -45,7 +45,7 @@ setindex!(coord::CoordinateRepr, args...) = setindex!(coord._inner_mat, args...)
 @doc raw"""
     heatmap_data(op[, lattice_size])
 
-Generates a CoordinateRepr for values like $\langle r | \hat{\mathcal{Op}} | r \rangle$.
+Generates a CoordinateRepr for values like $\langle r | \hat{\mathcal{O}} | r \rangle$.
 
 # Arguments
 - `op`: the operator to find values for
