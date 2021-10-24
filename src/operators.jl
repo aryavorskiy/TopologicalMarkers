@@ -6,8 +6,8 @@ using LinearAlgebra
 Returns a tuple of coordinate operators (e. g. $\hat{X}$ and $\hat{Y}$).
 
 # Arguments
-- `lattice_size`: the size of the lattice.
-- `symmetric`: defines if the operators are symmetricall (e. g. the center of the lattice corresponds to `(0, 0)`).
+- `lattice_size`: the size of the lattice
+- `symmetric`: defines if the operators are symmetricall (e. g. the center of the lattice corresponds to `(0, 0)`)
 """
 function coord_operators(lattice_size::SizeType; 
     symmetric::Bool=true)::NTuple{2,Matrix{Float64}}
@@ -33,8 +33,8 @@ coord_operators(; kw...) = coord_operators(nothing; kw...)
 Returns a projector onto the filled states (in other words, a ground state density matrix).
 
 # Arguments
-- `H`: the hamiltonian matrix.
-- `energy_thr`: the Fermi energy level.
+- `H`: the hamiltonian matrix
+- `energy_thr`: the Fermi energy level
 """
 function filled_projector(H::Matrix{<:Complex{<:Real}}, energy_thr::Real=0)
     val, vec = eigen(Hermitian(H))

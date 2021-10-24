@@ -13,12 +13,12 @@ end
 A wrapper class for matrices to be conveniently plotted. 
 
 # Arguments
-- `lattice`: A matrix representing some quantity defined on the lattice (e. g. the LCM).
+- `lattice`: A matrix representing some quantity defined on the lattice (e. g. the LCM)
 - `repr_spec`: A symbol defining the way how the lattice sites match the matrix values:
-    - `:c` or `:coord`: The value for `(x, y)` site is `A[x, y]`. This is the default value.
+    - `:c` or `:coord`: The value for `(x, y)` site is `A[x, y]`. This is the default value
     - `:n` of `:natural`: If you print out the matrix as you usually do, and then imagine 
     a coordinate system with its center in the bottom-left corner, this will be the mapping between
-    sites and matrix values.
+    sites and matrix values
 """
 function CoordinateRepr(lattice::Matrix{T}, repr_spec::Symbol) where T
     if repr_spec ∈ (:c, :coord)
@@ -26,7 +26,7 @@ function CoordinateRepr(lattice::Matrix{T}, repr_spec::Symbol) where T
     elseif repr_spec ∈ (:n, :natural)
         CoordinateRepr(permutedims(lattice[end:-1:1, :], (2, 1)) |> Matrix)
     else
-        error("Unsupported indexing type $repr_spec")
+        error("Unsupported indexing type '$repr_spec'")
     end
 end
 
@@ -84,9 +84,9 @@ The output is a tuple of two vectors with equal length: one contains arrow origi
 # Arguments
 - `currents_mat`: a matrix with currents
 - `lattice_size`: the size of the lattice
-- `threshold`: minimum value of the current to be put to output. Default is `0.1`.
-- `dist_threshold`: maximum distance between sites for which the current will be evaluated. Infinite by default.
-- `xlims` and `ylims`: limit the area in which the currents will be evaluated. Infinite by default.
+- `threshold`: minimum value of the current to be put to output. Default is `0.1`
+- `dist_threshold`: maximum distance between sites for which the current will be evaluated. Infinite by default
+- `xlims` and `ylims`: limit the area in which the currents will be evaluated. Infinite by default
 """
 function quiver_data(currents_mat::AbstractMatrix{<:Real}, lattice_size::SizeType=nothing; threshold::Real=0.1, dist_threshold::Real=Inf,
     xlims::NTuple{2, <:Real}=(-Inf, Inf), ylims::NTuple{2, <:Real}=(-Inf, Inf))

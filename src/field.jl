@@ -36,17 +36,17 @@ macro symm(B, center=nothing)
 end
 
 """
-    flux(Φ[, center])
+    flux(Φ[, point])
 Generates a function that returns the vector potential for a flux quantum. This can be used as an argument for the `field!` function.
 
 # Arguments
-- `B`: the value of magnetic field
-- `center`: the point where the flux is located
+- `Φ`: the value of magnetic field
+- `point`: the point where the flux is located
 """
-macro flux(Φ, center=nothing)
-    if center !== nothing
+macro flux(Φ, point=nothing)
+    if point !== nothing
         return quote
-            local c = [$(esc(center))...]
+            local c = [$(esc(point))...]
             @inline A(r::Vector{Float64})::Vector{Float64} = normalize([-r[2] + c[2], r[1] - c[1]]) * $(esc(Φ))
         end
     else 

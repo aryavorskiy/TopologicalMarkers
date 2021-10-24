@@ -55,9 +55,9 @@ $\varphi_{ij} = 2\pi \int_i^j A(r) \cdot dr$
 This integral is calculated explicitly for every hopping, using the `A` function.
 
 # Arguments
-- `H`: the hamiltonian matrix.
-- `A`: a function that takes a `Vector` representing a point and returns a `Vector` representing the vector potential in that point.
-- `lattice_size`: the size of the lattice the hamiltonian is defined for. If not provided, this function will use the value for the hamiltonian matrix that was created last.
+- `H`: the hamiltonian matrix
+- `A`: a function that takes a `Vector` representing a point and returns a `Vector` representing the vector potential in that point
+- `lattice_size`: the size of the lattice the hamiltonian is defined for. If not provided, this function will use the value for the hamiltonian matrix that was created last
 - `intervals`: the number of intervals to use when calculating the Peierls substitution phase factor
 """
 function field!(H::AbstractMatrix{<:Complex}, A::Function, lattice_size::SizeType = nothing; intervals::Int=10)
@@ -92,9 +92,9 @@ end
 Divides the Chern insulator hamiltonian into several unconnected zones. The hoppings between these zones are erased.
 
 # Arguments
-- `H`: the hamiltonian matrix.
-- `zone_mapping`: an `AbstractMatrix{Symbol}` or `CoordinateRepr{Symbol}`. Each site is mapped to a symbol, different symbols mean different zones.
-- `repr_spec`: if `zone_mapping` is an `AbstractMatrix{Symbol}`, this argument is a representation specifier (see `CoordinateRepr` docs for more information).
+- `H`: the hamiltonian matrix
+- `zone_mapping`: an `AbstractMatrix{Symbol}` or `CoordinateRepr{Symbol}`. Each site is mapped to a symbol, different symbols mean different zones
+- `repr_spec`: if `zone_mapping` is an `AbstractMatrix{Symbol}`, this argument is a representation specifier (see `CoordinateRepr` docs for more information)
 """
 function zones!(H::Matrix{ComplexF64}, zone_mapping::CoordinateRepr{Symbol})
     lattice_size = size(zone_mapping)
@@ -129,11 +129,11 @@ $\hat{H} =
 h. c.$
 
 # Arguments
-- `m_repr`: The value of `m` on different sites, in `CoordinateRepr` format. 
-Alternatively, pass a matrix and a representation specifier (see `CoordinateRepr` for more information).
-- `pbc`: Periodic boundary conditions. A `Tuple{Bool, Bool}`, each element sets boundary conditions for the horizontal and vertical edge respectively. Default is `(false, false)`.
-- `zones`: A matrix with elements of arbitrary type, which maps sites to isolated zones. The hopping members between different zones are erased. There are no isolated zones by default.
-- `field`: A function/lambda that takes two coordinates and returns the vector potential of the magnetic field. Used to calculate phase factors on hoppings. There is no magnetic field by default.
+- `m_repr`: The value of `m` on different sites, in `CoordinateRepr` format
+Alternatively, pass a matrix and a representation specifier (see `CoordinateRepr` for more information)
+- `pbc`: Periodic boundary conditions. A `Tuple{Bool, Bool}`, each element sets boundary conditions for the horizontal and vertical edge respectively. Default is `(false, false)`
+- `zones`: A matrix with elements of arbitrary type, which maps sites to isolated zones. The hopping members between different zones are erased. There are no isolated zones by default
+- `field`: A function/lambda that takes two coordinates and returns the vector potential of the magnetic field. Used to calculate phase factors on hoppings. There is no magnetic field by default
 """
 function hamiltonian(m_repr::CoordinateRepr{Float64}; kw...)
     arg_keys = Set(keys(kw))

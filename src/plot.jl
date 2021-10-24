@@ -9,8 +9,8 @@ AbstractPlot = Union{Subplot,Plot}
 Draws boundaries between different zones described by the `zone_mapping` matrix.
 
 # Arguments
-- `pl`: a `Plots.Plot` object to visualize data on.
-- `zone_mapping`: a `CoordinateRepr` object that represents zone mapping. The boundaries between different zones will be drawn.
+- `pl`: a `Plots.Plot` object to visualize data on
+- `zone_mapping`: a `CoordinateRepr` object that represents zone mapping. The boundaries between different zones will be drawn
 
 All keyword arguments will be passed to the `plot!` function used for drawing - this can be used to change the line thickness or style, for example.
 """
@@ -103,12 +103,12 @@ end
 Plots complicated marker data series (heatmap, boundaries, quiver) on a single figure.
 
 # Arguments
-- `pl`: a `Plots.Plot` object to visualize data on.
+- `pl`: a `Plots.Plot` object to visualize data on
 - `hmap`: data to be visualized on a heatmap. It can be a `CoordinateRepr` object (then it will be plotted directly) 
-or a linear operator matrix (then the `CoordinateRepr` will be generated automatically).
+or a linear operator matrix (then the `CoordinateRepr` will be generated automatically)
 - `zone_mapping`: a `CoordinateRepr` object that represents zone mapping. The boundaries between different zones will be drawn.
-- `currents`: a matrix containing currents between sites.
-- `xlims` and `ylims`: objects of type `Tuple{Int, Int}` that define the limits of the x- and y- axes respectively.
+- `currents`: a matrix containing currents between sites
+- `xlims` and `ylims`: objects of type `Tuple{Int, Int}` that define the limits of the x- and y- axes respectively
 
 All keyword arguments with different prefixes are passed th the `plot!` function:
 - `hmap` for the heatmap
@@ -116,6 +116,7 @@ All keyword arguments with different prefixes are passed th the `plot!` function
 - `currents` for the quiver
 
 This can be used to style the plot:
+
 `plot_marker!(..., hmapclims=(-3, 3), boundsstyle=:dot, :currentscolor=:green)`
 """
 function plot_marker!(pl::AbstractPlot; hmap=nothing, currents=nothing, zone_mapping=nothing, xlims::SizeType=nothing, ylims::SizeType=nothing,

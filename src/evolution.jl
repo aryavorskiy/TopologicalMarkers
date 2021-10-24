@@ -11,7 +11,7 @@ Calculates the unitary evolution operator using the formula
 $ \mathcal{U}(t) = e^{-\frac{1}{i\hbar} \hat{H} t} $
 
 # Arguments
-- `H`: the hamiltonian matrix.
+- `H`: the hamiltonian matrix
 - `t`: the evolution time
 """
     global function evolution_operator(H::AbstractMatrix{<:Complex{<:Real}}, t::Real)
@@ -39,7 +39,7 @@ end
     @evolution [rules...] for_loop
 
 Generates an environment with defined hamiltonian and density matrices that evolve by certain laws.
-See [Unitary evolution](docs/evolution.md) for more details.
+See [Unitary evolution](evolution.md) for more details.
 """
 macro evolution(rules, loop)
     if typeof(loop) != Expr || loop.head != :for

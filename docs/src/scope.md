@@ -1,4 +1,8 @@
-# Function scope
+# TopologicalMarkers.jl
+
+```@index
+Modules = [TopologicalMarkers]
+```
 
 ## Hamiltonian matrix
 
@@ -40,6 +44,6 @@ These functions may come in handy when you want to plot many marker heatmaps and
 
 ```@docs
 plot_boundaries!
-plot_marker
+plot_marker!
 plot_auto
 ```

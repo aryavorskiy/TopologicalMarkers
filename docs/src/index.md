@@ -1,8 +1,16 @@
-# TopologicalMarkers
+# TopologicalMarkers.jl
 
 A package that simplifies calculation of different topological markers.
 
-Here is an example: let us take a Chern insulator, set the $m$ parameter to $-1$ in the middle of the lattice and $1$ everywhere else,
+To install it, simply copy this line to julia's REPL and execute it:
+
+```
+]add https://github.com/aryavorskiy/TopologicalMarkers/
+```
+
+## Examples
+
+Let us take a Chern insulator, set the $m$ parameter to $-1$ in the middle of the lattice and $1$ everywhere else,
 and then evaluate the local Chern marker using both traditional and Streda formulas:
 
 ```@example
@@ -29,3 +37,5 @@ savefig("example.png"); nothing # hide
 The code here will produce the following graph:
 
 ![](example.png)
+
+_TODO add more examples_
