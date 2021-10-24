@@ -10,13 +10,6 @@ This package can be installed using Julia's package manager via REPL:
 (@v1.6) pkg> add https://github.com/aryavorskiy/TopologicalMarkers
 ```
 
-## Features
-
-- Chern insulator hamiltonian matrix generation
-- Unitary evolution specification
-- Powerful and flexible visualization tools
-- Local marker currents evaluation
-
 ## Usage
 
 ### Hamiltionan matrix generation
@@ -43,8 +36,6 @@ Hb = copy(H)
 field!(H, @landau(B))
 ```
 
-See [Operators](docs/operators.md) for more details.
-
 ### Unitary evolution
 
 ```julia
@@ -69,8 +60,6 @@ plot(title="LCM quench")
     plot!(lcm[8, :])
 end
 ```
-
-See [Unitary evolution](docs/evolution.md) for more details.
 
 ### Visualization tools
 
@@ -100,4 +89,4 @@ end
 gif(anim, "animation.gif", fps = 4)
 ```
 
-See [Visualization](docs/visual.md) for more details.
+See docs for more details.

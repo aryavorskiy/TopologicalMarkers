@@ -4,6 +4,16 @@ AbstractPlot = Union{Subplot,Plot}
 
 # Boundary visualization
 
+"""
+    plot_boundaries!([pl, ]zone_mapping; <keyword arguments>)
+Draws boundaries between different zones described by the `zone_mapping` matrix.
+
+# Arguments
+- `pl`: a `Plots.Plot` object to visualize data on
+- `zone_mapping`: a `CoordinateRepr` object that represents zone mapping. The boundaries between different zones will be drawn
+
+All keyword arguments will be passed to the `plot!` function used for drawing - this can be used to change the line thickness or style, for example.
+"""
 function plot_boundaries!(pl::AbstractPlot, zone_mapping::CoordinateRepr; color=:black, kw...)::Plots.plot
     local lattice_size = size(zone_mapping)
     for i in 1:lattice_size[1] - 1, j in 1:lattice_size[2] - 1
@@ -23,9 +33,10 @@ plot_boundaries!(zone_mapping::AbstractMatrix; kw...)::Plots.Plot =
 _unchain_arg(arg) = 
     arg isa Pair ? Any[_unchain_arg(arg.first)..., _unchain_arg(arg.second)...] : Any[arg]
 
+_obtain_repr(obj, lattice_size::SizeType)::CoordinateRepr = obj isa CoordinateRepr ? obj : heatmap_data(obj, lattice_size)
+
 function _expand_arg(arg, lattice_size)
     mat_type = Union{AbstractMatrix,CoordinateRepr}
-    _obtain_repr(obj) = obj isa CoordinateRepr ? obj : heatmap_data(obj, lattice_size)
     mat::N{CoordinateRepr} = nothing
     tit::AbstractString = ""
     cur::N{AbstractMatrix} = nothing
@@ -40,7 +51,7 @@ function _expand_arg(arg, lattice_size)
     if length(arg_list) > 2
         error("Too long argument")
     end
-    mat = _obtain_repr(arg_list[1])
+    mat = _obtain_repr(arg_list[1], lattice_size)
     if length(arg_list) > 1
         cur = arg_list[2]
     end
@@ -49,20 +60,20 @@ end
 
 # Optimal layout
 
-function _optimal_grid_size(plots_total::Integer, plot_aspect_ratio::NTuple{2,Integer}, subplot_aspect_ratio::NTuple{2,Integer})
+function _optimal_grid_size(plots_total::Int, plot_aspect_ratio::NTuple{2,Int}, subplot_aspect_ratio::NTuple{2,Int})::NTuple{2, Int}
     rows = round(Int, √(plots_total * plot_aspect_ratio[2] / plot_aspect_ratio[1] * subplot_aspect_ratio[1] / subplot_aspect_ratio[2]))
     rows = min(max(rows, 1), plots_total)
     cols = ceil(Int64, plots_total / rows)
 return rows, cols
 end
 
-function _optimal_size(plots_total::Integer; subplot_size::NTuple{2,Integer}=(450, 350))
+function _optimal_size(plots_total::Int; subplot_size::NTuple{2,Int}=(450, 350))::NTuple{2, Int}
     rows, cols = _optimal_grid_size(plots_total, subplot_size, subplot_size)
     return subplot_size[1] * cols, subplot_size[2] * rows
 end
 
 
-function optimal_layout(plots_total::Integer; plot_size::N{NTuple{2,Integer}}=nothing, subplot_size::NTuple{2,Integer}=(450, 350))
+function optimal_layout(plots_total::Int; plot_size::SizeType=nothing, subplot_size::NTuple{2,Int}=(450, 350))
     rows, cols = _optimal_grid_size(plots_total, plot_size === nothing ? subplot_size : plot_size, subplot_size)
     col_remainder = 1 - (rows * cols - plots_total) / cols
 
@@ -86,8 +97,30 @@ function _keys_by_prefix(dct::Iterators.Pairs, prefix::AbstractString)
     return out
 end
 
-function plot_marker!(pl::AbstractPlot; hmap=nothing, currents=nothing, zone_mapping=nothing, xlims=nothing, ylims=nothing,
-    lattice_size::N{NTuple{2,Integer}}=nothing, kw...)
+"""
+    plot_marker!(pl; <keyword arguments>)
+
+Plots complicated marker data series (heatmap, boundaries, quiver) on a single figure.
+
+# Arguments
+- `pl`: a `Plots.Plot` object to visualize data on
+- `hmap`: data to be visualized on a heatmap. It can be a `CoordinateRepr` object (then it will be plotted directly) 
+or a linear operator matrix (then the `CoordinateRepr` will be generated automatically)
+- `zone_mapping`: a `CoordinateRepr` object that represents zone mapping. The boundaries between different zones will be drawn.
+- `currents`: a matrix containing currents between sites
+- `xlims` and `ylims`: objects of type `Tuple{Int, Int}` that define the limits of the x- and y- axes respectively
+
+All keyword arguments with different prefixes are passed th the `plot!` function:
+- `hmap` for the heatmap
+- `bounds` for the boundaries
+- `currents` for the quiver
+
+This can be used to style the plot:
+
+`plot_marker!(..., hmapclims=(-3, 3), boundsstyle=:dot, :currentscolor=:green)`
+"""
+function plot_marker!(pl::AbstractPlot; hmap=nothing, currents=nothing, zone_mapping=nothing, xlims::SizeType=nothing, ylims::SizeType=nothing,
+    lattice_size::SizeType=nothing, kw...)
     lattice_size = _try_get_lattice_size(lattice_size)
     hmap_kw = _keys_by_prefix(kw, "hmap")
     currs_kw = _keys_by_prefix(kw, "currents")
@@ -95,8 +128,7 @@ function plot_marker!(pl::AbstractPlot; hmap=nothing, currents=nothing, zone_map
     xlims = xlims !== nothing ? xlims : (0, lattice_size[1] + 1)
     ylims = ylims !== nothing ? ylims : (0, lattice_size[2] + 1)
     if hmap != nothing
-        obtain_repr(obj) = obj isa CoordinateRepr ? obj : heatmap_data(obj, lattice_size)
-        heatmap!(pl, obtain_repr(hmap); hmap_kw...)
+        heatmap!(pl, _obtain_repr(hmap, lattice_size); hmap_kw...)
     end
     if zone_mapping !== nothing
         plot_boundaries!(pl, zone_mapping; bounds_kw...)
@@ -111,6 +143,7 @@ function plot_marker!(pl::AbstractPlot; hmap=nothing, currents=nothing, zone_map
 end
 
 """
+    plot_auto(<arguments>; <keyword arguments>)
 Plots multiple heatmaps, slices or currents simultaneously.
 
 The subplots are automatically arranged into an optimal layout.
@@ -120,7 +153,7 @@ The subplots are automatically arranged into an optimal layout.
 Each argument can be either a `CoordinateRepr` object or a chain of pairs.
 """
 function plot_auto(args...; layout=nothing, plot_size=nothing, zone_mapping::N{CoordinateRepr}=nothing, title="",
-     control_site=nothing, control_sites::AbstractVector{NTuple{2,Integer}}=Vector{NTuple{2,Integer}}(), clims=:auto, lattice_size=nothing, kw...)
+     control_site=nothing, control_sites::AbstractVector{NTuple{2,Int}}=Vector{NTuple{2,Int}}(), lattice_size=nothing, kw...)
     lattice_size = _try_get_lattice_size(lattice_size)
     sites = []
     if control_site !== nothing
@@ -142,6 +175,7 @@ function plot_auto(args...; layout=nothing, plot_size=nothing, zone_mapping::N{C
     p = plot(layout=layout, size=plot_size)
 
     marker_kw = _keys_by_prefix(kw, "marker")
+    slice_kw = _keys_by_prefix(kw, "slice")
 
     # Process args
     for i in 1:length(args)
@@ -151,7 +185,7 @@ function plot_auto(args...; layout=nothing, plot_size=nothing, zone_mapping::N{C
         for site_idx = 1:length(sites)
             site = sites[site_idx]
             p_slice = p[site_idx + length(args)];
-            plot!(p_slice, repr[:, site[2]], title="@ $site", lab=tit, ylim=(clims isa NTuple{2,<:Real} ? clims .* 2 : clims))
+            plot!(p_slice, repr[:, site[2]]; title="@ $site", lab=tit, slice_kw...)
             vline!(p_slice, )
             hline!(p[i], [site[2]]; lab=nothing, marker_kw...)
             plot!(p[i], [site]; st=:scatter, lab=nothing, marker_kw...)
