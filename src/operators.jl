@@ -3,11 +3,11 @@ using LinearAlgebra
 @doc raw"""
     coord_operators([lattice_size]; <keyword arguments>)
 
-Returns a tuple of coordinate operators (e. g. $\hat{X}$ and $\hat{Y}$).
+Returns a tuple of coordinate operators (i. e. $\hat{X}$ and $\hat{Y}$).
 
 # Arguments
 - `lattice_size`: the size of the lattice
-- `symmetric`: defines if the operators are symmetricall (e. g. the center of the lattice corresponds to `(0, 0)`)
+- `symmetric`: defines if the operators are symmetricall (in other words, if the center of the lattice corresponds to `(0, 0)`)
 """
 function coord_operators(lattice_size::SizeType; 
     symmetric::Bool=true)::NTuple{2,Matrix{Float64}}
