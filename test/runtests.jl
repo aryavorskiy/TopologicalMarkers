@@ -7,26 +7,26 @@ using Plots
 
 println("done.")
 
-# using Profile
-# using StatProfilerHTML
-# Profile.init(n = 10^7, delay = 0.1)
-# time_domain = 0:0.05:30
-# ms = CoordinateRepr(ones(15, 15))
-# Bf = 0.01
-# τ = 30
+using Profile
+using StatProfilerHTML
+Profile.init(n = 10^7, delay = 0.1)
+time_domain = 0:0.05:30
+ms = CoordinateRepr(ones(15, 15))
+Bf = 0.01
+τ = 30
 
-# H0 = hamiltonian(ms)
-# P0 = filled_projector(H0)
-# h(t) = hamiltonian(ms, field=@landau(Bf * t / τ))
-# a = Animation()
-# @profilehtml @evolution [
-#     :ham => h => H,
-#     P0 => h => P
-# ] for t in 0:1:τ
-#     cur = currents(H, P)
-#     plot_auto("f" => P => cur * 10, clims=(0.98, 1.02))
-#     frame(a)
-# end
+H0 = hamiltonian(ms)
+P0 = filled_projector(H0)
+h(t) = hamiltonian(ms, field=@landau(Bf * t / τ))
+a = Animation()
+@profilehtml @evolution [
+    :ham => h => H,
+    P0 => h => P
+] for t in 0:1:τ
+    cur = currents(H, P)
+    plot_auto("f" => P => cur * 10, clims=(0.98, 1.02))
+    frame(a)
+end
 
 # Macro tests
 @testset "Usability tests" begin

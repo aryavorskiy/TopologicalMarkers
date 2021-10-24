@@ -51,7 +51,7 @@ Generates a CoordinateRepr for values like $\langle r | \hat{\mathcal{Op}} | r \
 - `op`: the operator to find values for
 - `lattice_size`: the size of the lattice
 """
-function heatmap_data(op::AbstractMatrix{<:Complex{T}}, lattice_size::N{NTuple{2,Integer}})::CoordinateRepr{T} where T <: Real
+function heatmap_data(op::AbstractMatrix{<:Complex{T}}, lattice_size::SizeType)::CoordinateRepr{T} where T <: Real
     lattice_size = _try_get_lattice_size(lattice_size)
     markers = zeros(T, lattice_size)
     for i in 1:prod(lattice_size)
@@ -64,7 +64,7 @@ heatmap_data(op) = heatmap_data(op, nothing)
 
 # Arrow visualization
 
-function _arrow_data(lattice_size::NTuple{2,Integer}, cur::Real, i::Integer, j::Integer)
+function _arrow_data(lattice_size::NTuple{2,Int}, cur::Real, i::Int, j::Int)
     if cur < 0
         i, j = j, i
         cur = -cur
@@ -88,10 +88,10 @@ The output is a tuple of two vectors with equal length: one contains arrow origi
 - `dist_threshold`: maximum distance between sites for which the current will be evaluated. Infinite by default.
 - `xlims` and `ylims`: limit the area in which the currents will be evaluated. Infinite by default.
 """
-function quiver_data(currents_mat::AbstractMatrix{<:Real}, lattice_size::N{NTuple{2,Integer}}=nothing; threshold::Real=0.1, dist_threshold::Real=Inf,
+function quiver_data(currents_mat::AbstractMatrix{<:Real}, lattice_size::SizeType=nothing; threshold::Real=0.1, dist_threshold::Real=Inf,
     xlims::NTuple{2, <:Real}=(-Inf, Inf), ylims::NTuple{2, <:Real}=(-Inf, Inf))
     lattice_size = _try_get_lattice_size(lattice_size)
-    ps = Vector{NTuple{2,<:Integer}}()
+    ps = Vector{NTuple{2,<:Int}}()
     qs = Vector{NTuple{2,<:Real}}()
     for i in 1:prod(lattice_size), j in 1:(i - 1)
         p, q = _arrow_data(lattice_size, currents_mat[i, j], i, j)

@@ -23,9 +23,10 @@ plot_boundaries!(zone_mapping::AbstractMatrix; kw...)::Plots.Plot =
 _unchain_arg(arg) = 
     arg isa Pair ? Any[_unchain_arg(arg.first)..., _unchain_arg(arg.second)...] : Any[arg]
 
+_obtain_repr(obj, lattice_size::SizeType)::CoordinateRepr = obj isa CoordinateRepr ? obj : heatmap_data(obj, lattice_size)
+
 function _expand_arg(arg, lattice_size)
     mat_type = Union{AbstractMatrix,CoordinateRepr}
-    _obtain_repr(obj) = obj isa CoordinateRepr ? obj : heatmap_data(obj, lattice_size)
     mat::N{CoordinateRepr} = nothing
     tit::AbstractString = ""
     cur::N{AbstractMatrix} = nothing
@@ -40,7 +41,7 @@ function _expand_arg(arg, lattice_size)
     if length(arg_list) > 2
         error("Too long argument")
     end
-    mat = _obtain_repr(arg_list[1])
+    mat = _obtain_repr(arg_list[1], lattice_size)
     if length(arg_list) > 1
         cur = arg_list[2]
     end
@@ -49,20 +50,20 @@ end
 
 # Optimal layout
 
-function _optimal_grid_size(plots_total::Integer, plot_aspect_ratio::NTuple{2,Integer}, subplot_aspect_ratio::NTuple{2,Integer})
+function _optimal_grid_size(plots_total::Int, plot_aspect_ratio::NTuple{2,Int}, subplot_aspect_ratio::NTuple{2,Int})::NTuple{2, Int}
     rows = round(Int, √(plots_total * plot_aspect_ratio[2] / plot_aspect_ratio[1] * subplot_aspect_ratio[1] / subplot_aspect_ratio[2]))
     rows = min(max(rows, 1), plots_total)
     cols = ceil(Int64, plots_total / rows)
 return rows, cols
 end
 
-function _optimal_size(plots_total::Integer; subplot_size::NTuple{2,Integer}=(450, 350))
+function _optimal_size(plots_total::Int; subplot_size::NTuple{2,Int}=(450, 350))::NTuple{2, Int}
     rows, cols = _optimal_grid_size(plots_total, subplot_size, subplot_size)
     return subplot_size[1] * cols, subplot_size[2] * rows
 end
 
 
-function optimal_layout(plots_total::Integer; plot_size::N{NTuple{2,Integer}}=nothing, subplot_size::NTuple{2,Integer}=(450, 350))
+function optimal_layout(plots_total::Int; plot_size::SizeType=nothing, subplot_size::NTuple{2,Int}=(450, 350))
     rows, cols = _optimal_grid_size(plots_total, plot_size === nothing ? subplot_size : plot_size, subplot_size)
     col_remainder = 1 - (rows * cols - plots_total) / cols
 
@@ -87,7 +88,7 @@ function _keys_by_prefix(dct::Iterators.Pairs, prefix::AbstractString)
 end
 
 function plot_marker!(pl::AbstractPlot; hmap=nothing, currents=nothing, zone_mapping=nothing, xlims=nothing, ylims=nothing,
-    lattice_size::N{NTuple{2,Integer}}=nothing, kw...)
+    lattice_size::SizeType=nothing, kw...)
     lattice_size = _try_get_lattice_size(lattice_size)
     hmap_kw = _keys_by_prefix(kw, "hmap")
     currs_kw = _keys_by_prefix(kw, "currents")
@@ -95,8 +96,7 @@ function plot_marker!(pl::AbstractPlot; hmap=nothing, currents=nothing, zone_map
     xlims = xlims !== nothing ? xlims : (0, lattice_size[1] + 1)
     ylims = ylims !== nothing ? ylims : (0, lattice_size[2] + 1)
     if hmap != nothing
-        obtain_repr(obj) = obj isa CoordinateRepr ? obj : heatmap_data(obj, lattice_size)
-        heatmap!(pl, obtain_repr(hmap); hmap_kw...)
+        heatmap!(pl, _obtain_repr(hmap, lattice_size); hmap_kw...)
     end
     if zone_mapping !== nothing
         plot_boundaries!(pl, zone_mapping; bounds_kw...)
@@ -120,7 +120,7 @@ The subplots are automatically arranged into an optimal layout.
 Each argument can be either a `CoordinateRepr` object or a chain of pairs.
 """
 function plot_auto(args...; layout=nothing, plot_size=nothing, zone_mapping::N{CoordinateRepr}=nothing, title="",
-     control_site=nothing, control_sites::AbstractVector{NTuple{2,Integer}}=Vector{NTuple{2,Integer}}(), lattice_size=nothing, kw...)
+     control_site=nothing, control_sites::AbstractVector{NTuple{2,Int}}=Vector{NTuple{2,Int}}(), lattice_size=nothing, kw...)
     lattice_size = _try_get_lattice_size(lattice_size)
     sites = []
     if control_site !== nothing
