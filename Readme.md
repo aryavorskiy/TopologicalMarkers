@@ -12,7 +12,7 @@ This package can be installed using Julia's package manager via REPL:
 
 ## Usage
 
-### Hamiltionan matrix generation
+### Hamiltonian matrix generation
 
 ```julia
 using TopologicalMarkers
@@ -46,7 +46,7 @@ H1 = hamiltonian(ones(sz), :c)
 H2 = hamiltonian(ones(sz) * 3, :c)
 
 P_0 = filled_projector(H1) # generate ground state density matrix
-X, Y = coord_operators()   # gengrate coordinate operators
+X, Y = coord_operators()   # generate coordinate operators
 h(t) = H2 # set hamiltonian time dependence
 
 plot(title="LCM quench")
@@ -71,7 +71,7 @@ H1 = hamiltonian(ones(sz), :c)
 H2 = hamiltonian(ones(sz) * 3, :c)
 
 P_0 = filled_projector(H1) # generate ground state density matrix
-X, Y = coord_operators()   # gengrate coordinate operators
+X, Y = coord_operators()   # generate coordinate operators
 h(t) = H2 # set hamiltonian time dependence
 
 plot(title="LCM quench")

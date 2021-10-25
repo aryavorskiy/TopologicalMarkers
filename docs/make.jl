@@ -15,7 +15,7 @@ pages = [
 
 makedocs(
     modules = [TopologicalMarkers],
-    sitename = "TopologicalMarkers",
+    sitename = "TopologicalMarkers.jl",
     pages = pages
 )
 

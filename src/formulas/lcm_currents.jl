@@ -2,6 +2,9 @@ get_curr(operator, i, j) = operator[2 * i - 1:2 * i, 2 * j - 1:2 * j]
 
 # LCM current macros
 
+"""
+    @J_c(H, P, X, Y)
+"""
 macro J_c(H, P, X, Y)
     quote 
         global J_type = "J_c"
@@ -12,6 +15,9 @@ macro J_c(H, P, X, Y)
     end
 end
 
+"""
+    @J_m(H, P, X, Y)
+"""
 macro J_m(H, P, X, Y)
     quote
         global J_type = "J_m"
@@ -26,6 +32,9 @@ macro J_m(H, P, X, Y)
     end
 end
 
+"""
+    @J_eq(H, P, X, Y)
+"""
 macro J_eq(H, P, X, Y)
     quote
         global J_type = "J_eq"
@@ -40,6 +49,9 @@ macro J_eq(H, P, X, Y)
     end
 end
 
+"""
+    @J_m_inv(H, P, X, Y)
+"""
 macro J_m_inv(H, P, X, Y)
     quote
         global J_type = "J_m_inv"
@@ -62,6 +74,9 @@ macro J_m_inv(H, P, X, Y)
     end
 end
 
+"""
+    @J_best(H, P, X, Y)
+"""
 macro J_best(H, P, X, Y)
     quote        
         global J_type = "J_best"
@@ -88,6 +103,9 @@ macro J_best(H, P, X, Y)
     end
 end
 
+"""
+    @J_inv(H, P, X, Y)
+"""
 macro J_inv(H, P, X, Y)
     quote
         jc = $(esc(:(@J_c($H, $P, $X, $Y))))
@@ -97,6 +115,9 @@ macro J_inv(H, P, X, Y)
     end
 end
 
+"""
+    @J(H, P, X, Y)
+"""
 macro J(H, P, X, Y)
     quote
         jc = $(esc(:(@J_c($H, $P, $X, $Y))))
@@ -106,6 +127,15 @@ macro J(H, P, X, Y)
     end
 end
 
+"""
+    @currents(currents_lambda)
+
+Generates a matrix with currents, given a lambda/macrocall that takes lattice site indices and returns the current value
+
+**Example usage:**
+
+`currents_mat = @currents @J H P X Y`
+"""
 macro currents(call)
     if !(call isa Expr) || call.head != :macrocall
         return quote
