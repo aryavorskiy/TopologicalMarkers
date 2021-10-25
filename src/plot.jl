@@ -127,7 +127,7 @@ function plot_marker!(pl::AbstractPlot; hmap=nothing, currents=nothing, zone_map
     bounds_kw = _keys_by_prefix(kw, "bounds")
     xlims = xlims !== nothing ? xlims : (0, lattice_size[1] + 1)
     ylims = ylims !== nothing ? ylims : (0, lattice_size[2] + 1)
-    if hmap != nothing
+    if hmap !== nothing
         heatmap!(pl, _obtain_repr(hmap, lattice_size); hmap_kw...)
     end
     if zone_mapping !== nothing

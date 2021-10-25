@@ -10,4 +10,4 @@ This package can be installed using Julia's package manager via REPL:
 (@v1.6) pkg> add https://github.com/aryavorskiy/TopologicalMarkers
 ```
 
-See (the docs)[https://aryavorskiy.github.io/TopologicalMarkers] for more details.
+See [the docs](https://aryavorskiy.github.io/TopologicalMarkers) for more details.

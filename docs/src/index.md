@@ -35,6 +35,8 @@ plot_auto("LCM" => ch, "Streda" => str,
     hmapclims=(-1.5, 1.5), currentscolor=:yellow, control_site=(13, 13), markercolor=:brown)
 ```
 
+See (Hamiltonian generation)[@ref] and (Visualization)[@ref] for detailed explanation.
+
 Another good example is a problem where unitary evolution is used. 
 Here we create an animation of the local density changing during adiabatic magnetic field-on:
 
@@ -56,9 +58,11 @@ a = Animation()
     P0 => h => P
 ] for t in time_domain
     cur = currents(H, P)
-    plot_auto("Local density" => P => cur * 40, hmapclims=(0.98, 1.02))
+    plot_auto("Local density" => P => cur * 100, hmapclims=(0.9, 1.1))
     frame(a)
 end
 
 gif(a, "example_animation.gif", fps=10)
 ```
+
+See (Unitary evolution)[@ref] for detailed explanation.
