@@ -110,7 +110,7 @@ or a linear operator matrix (then the `CoordinateRepr` will be generated automat
 - `currents`: a matrix containing currents between sites
 - `xlims` and `ylims`: objects of type `Tuple{Int, Int}` that define the limits of the x- and y- axes respectively
 
-All keyword arguments with different prefixes are passed th the `plot!` function:
+All keyword arguments with different prefixes are passed to the `plot!` function:
 - `hmap` for the heatmap
 - `bounds` for the boundaries
 - `currents` for the quiver

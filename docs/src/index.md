@@ -58,7 +58,7 @@ a = Animation()
     P0 => h => P
 ] for t in time_domain
     cur = currents(H, P)
-    plot_auto("Local density" => P => cur * 100, hmapclims = (0.9, 1.1))
+    plot_auto("Local density" => P => cur * 100, plot_size = (800, 600), hmapclims = (0.9, 1.1))
     frame(a)
 end
 

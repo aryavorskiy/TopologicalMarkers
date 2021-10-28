@@ -8,7 +8,26 @@ However, if you plot a heatmap for a matrix, its first index is treated as $x$, 
 and the $Ox$ axis is directed upward. That's where we need this struct.
 
 The constructor takes two arguments - the matrix itself and a symbol - a _representation specifier_, 
-which tells if the matrix should be treated as _natural_ or _coordinate_ representation.
+which tells if the matrix should be treated as _natural_ (`:n` or `:natural`) or _coordinate_ (`:c` or `:coord`) representation.
+
+Let us look at an example:
+
+```@example nat_repr
+using TopologicalMarkers, Plots
+
+mat = zeros(12, 12)
+mat[1:5, 1:5] .= 1
+mat[1:10, 6:10] .= -1
+mat
+```
+
+You can see how this matrix looks when printed in a _natural_ way. Let us look at a heatmap of both representations:
+
+```@example nat_repr
+p = plot(layout = (1, 2), size = (800, 300))
+heatmap!(p[1], title="'Natural' representation", CoordinateRepr(mat, :n))
+heatmap!(p[2], title="'Coordinate' representation", CoordinateRepr(mat, :c))
+```
 
 ## Data processing
 
@@ -124,6 +143,6 @@ Pb = filled_projector(Hb)
 str = (Pb - P) / B
 
 plot_auto("LCM" => ch, "Streda" => str, zone_mapping = CoordinateRepr(m_lattice), 
-    hmapclims = (-1.5, 1.5), currentscolor = :yellow, split_view = (13, 13), 
-    markercolor = :brown, splitstyle = :dashdot)
+    plot_size = (800, 600), hmapclims = (-1.5, 1.5), currentscolor = :yellow, 
+    split_view = (13, 13), markercolor = :brown, splitstyle = :dashdot)
 ```
