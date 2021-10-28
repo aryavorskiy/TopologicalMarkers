@@ -2,12 +2,128 @@
 
 ## Coordinate representation
 
-_TODO_
+The [`CoordinateRepr`](@ref) struct is a workaround to deal with certain ambiguity of matrix graphical representations. 
+We usually index its elements row-first, and print the rows in ascending order (i. e. the natural representation). 
+However, if you plot a heatmap for a matrix, its first index is treated as $x$, the second - as $y$, 
+and the $Ox$ axis is directed upward. That's where we need this struct.
+
+The constructor takes two arguments - the matrix itself and a symbol - a _representation specifier_, 
+which tells if the matrix should be treated as _natural_ or _coordinate_ representation.
 
 ## Data processing
 
-_TODO_
+Most 'raw' data like operator or current matrices require additional processing before being plotted.
+
+The [`heatmap_data`](@ref) function generates a `CoordinateRepr` object, given a linear operator matrix. It evaluates traces of diagonal elements of the operator in the coordinate representation.
+
+```julia
+# c is the local Chern operator
+c = 4pi * im * P * X * (I - P) * Y * P
+
+marker = heatmap_data(c)
+heatmap(marker, color=:viridis)
+```
+
+The [`quiver_data`](@ref) function generates data to be added to a quiver plot. The input is a matrix with currents, the output is a tuple of vectors of the same length - one contains the origin points of the arrows, the other contains the arrow vectors.
+
+```julia
+# j is the electric currents matrix
+j = currents(H, P)
+
+ps, qs = quiver_data(j)
+quiver(ps, quiver = qs, color=:blue)
+```
+
+This function supports additional arguments - suppose you need to plot only arrows that are located in some specific zone, 
+currents between sites that are to far away from each other (e. g. more than 5) do not need to be displayed 
+and arrows shorter than `0.1` must be omitted. It is possible then to specify these parameters as follows:
+
+```julia
+# j is the electric currents matrix
+j = currents(H, P)
+lims = (5, 10)
+
+ps, qs = quiver_data(j; threshold = 0.1, dist_threshold = 5, xlims = lims, ylims = lims)
+quiver(ps, quiver = qs, color=:blue)
+```
 
 ## Automatic plotting
 
-_TODO_
+These functions may come in handy if you want to plot multiple figures simultaneously and do not want to set the layout up manually.
+
+The [`plot_marker!`](@ref) function can be used to plot a figure. It has one argument - the `Plot` object to draw on. 
+You can draw a heatmap, a quiver plot and also bounding lines between zones if you need to. What you have to do is pass a keyword argument:
+- `hmap` for heatmap
+- `currents` for quiver
+- `zone_mapping` for boundaries
+
+The `xlims` and `ylims` keywords have meaning traditional for plots. 
+All other keyword arguments are automatically parsed and then passed to the plot function at different stages depending on the prefix of the key.
+- `hmap` is passed to heatmap
+- `currents` is passed to quiver
+- `bounds` is passed to boundaries
+For example, `hmapcolor = :viridis` means that the argument `color = :viridis` will be passed to the function when plotting the heatmap. 
+
+Here is an example:
+
+```@setup vis_test
+using TopologicalMarkers, Plots
+```
+
+```@example vis_test
+ms = ones(15, 15)
+ms[6:10, 6:10] .= 3
+B = 0.1
+
+zs = fill(:ext, 15, 15)
+zs[6:10, 6:10] .= :isolate
+zones = CoordinateRepr(zs)
+
+H = hamiltonian(ms, :c, field = @landau(B), zone_mapping = zones)
+P = filled_projector(H)
+cur = currents(H, P)
+p = plot(title="State density in two-zone insulator")
+plot_marker!(p, hmap = P, currents = cur / maximum(abs.(cur)), bounds = zones, 
+    hmapcolor = :viridis, currentscolor = :blue, boundsstyle = :dashdotdot, 
+    boundscolor = :red)
+```
+
+The [`plot_auto`](@ref) function generates an optimal layout for the given amount of figures and then invokes `plot_marker!` multiple times.
+
+The arguments it takes are pairs like this:
+```julia
+title => heatmap => currents
+```
+
+Here the first and the third arguments can be omitted.
+
+Zone mapping can be set via the same keyword argument. Also you can create figures with split views if you define split viewpoints via `split_views` or `split_view` arguments.
+
+Each split viewpoint is a lattice site. For each one the function takes heatmap values for every site with the same y-coordinate and plots the heatmap values dependent on `x` on a separate plot. Each split viewpoint is emphasized with a special marker.
+
+This function also supports keyword argument parsing. The following prefixes are supported:
+- `hmap` is passed to heatmap
+- `currents` is passed to quiver
+- `bounds` is passed to boundaries
+- `marker` is passed to marker
+- `split` is passed to split views
+
+A good example is the piece of code on the main page of this website. Let us modify it a bit - add another split viewpoint, set the marker color to brown, and split view line style to `:dashdot`
+
+```@example vis_test
+m_lattice = ones(25, 25)
+m_lattice[11:15, 11:15] .= -1
+H = hamiltonian(m_lattice, :c)
+P = filled_projector(H)
+X, Y = coord_operators()
+ch = -4π * im * P * X * P * Y * P
+
+B = 0.01
+Hb = hamiltonian(m_lattice, :c, field = @landau(B))
+Pb = filled_projector(Hb)
+str = (Pb - P) / B
+
+plot_auto("LCM" => ch, "Streda" => str, zone_mapping = CoordinateRepr(m_lattice), 
+    hmapclims = (-1.5, 1.5), currentscolor = :yellow, split_view = (13, 13), 
+    markercolor = :brown, splitstyle = :dashdot)
+```

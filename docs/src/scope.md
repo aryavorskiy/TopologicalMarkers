@@ -2,6 +2,7 @@
 
 ```@index
 Modules = [TopologicalMarkers]
+Filter = f -> (n = String(nameof(f)); !(startswith(n, "@J")) && n != "@currents")
 ```
 
 ## Hamiltonian matrix
@@ -21,6 +22,13 @@ zones!
 coord_operators
 filled_projector
 currents
+```
+
+## LCM currents
+
+```@autodocs
+Modules = [TopologicalMarkers]
+Pages = [joinpath("formulas", "lcm_currents.jl")]
 ```
 
 ## Unitary evolution
