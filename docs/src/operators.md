@@ -81,7 +81,7 @@ P = filled_projector(H)
 X, Y = coord_operators()
 c = 4pi * im * P * X * (I - P) * Y * P
 
-heatmap(heatmap_data(c), color=:viridis)
+heatmap(heatmap_data(c), color = :viridis)
 ```
 
 ## Electric current
@@ -94,7 +94,7 @@ Here is an example of electric currents in a magnetic field:
 using Plots
 
 B = 0.1
-H = hamiltonian(ones(15, 15), :n, field=@symm(B))
+H = hamiltonian(ones(15, 15), :n, field = @symm(B))
 P = filled_projector(H)
 ps, qs = quiver_data(currents(H, P) * 10 / B)
 quiver(ps, quiver = qs)
@@ -102,18 +102,47 @@ quiver(ps, quiver = qs)
 
 ## LCM current
 
-There are several formulas which allow us to calculate currents of the local Chern marker. These formulas comply to the continuity equation, but, unlike electric currents, they are not localized. In this program, there are several macros that can interest you:
-
-```@autodocs
-Modules = [TopologicalMarkers]
-Pages = [joinpath("formulas", "lcm_currents.jl")]
-Filter = f -> nameof(f) != Symbol("@currents")
-```
+There are several formulas which allow us to calculate currents of the local Chern marker. These formulas comply to the continuity equation, but, unlike electric currents, they are not localized. In this program, there are several macros that can interest you, all can be found [in the corresponding section](scope.md#LCM-Currents).
 
 Each one takes matrices of the hamiltonian, the density and coordinate operators and returns a function that calculates a current given indices of 2 sites.
 
-To generate a matrix with currents, use the @currents macro:
+To generate a matrix with currents, use the [`@currents`](@ref) macro.
 
-```@docs
-@currents
+Here is an example animation of LCM behavior under after hamiltonian quench
+
+```@example ham_test
+using Plots
+
+H1 = hamiltonian(ones(15, 15), :c)
+H2 = hamiltonian(ones(15, 15) * 3, :c)
+
+h(t) = H2
+P0 = filled_projector(H1)
+X, Y = coord_operators()
+a = Animation()
+@evolution [
+    :ham => h => H,
+    P0 => h => P
+] for t in 0:0.1:3
+    c = -4pi * im * P * X * P * Y * P
+    cur = @currents @J_best H P X Y
+    plot_auto("LCM currents" => c => cur / 5, hmapclims = (-4, 1))
+    frame(a)
+end
+
+gif(a, "example_animation.gif", fps = 10)
 ```
+
+!!! warning
+    You may get an error entitled as `Please specify lattice size explicitly` while running one of these functions. 
+    This is caused by the fact that all these function require an additional argument, the lattice size, 
+    but by default they use the lattice size for the last hamiltonian generated.
+
+    It is quite unlikely that you encounter this error, but if you did, you can set the lattice size manually by using this function:
+
+    `TopologicalMarkers._set_lattice_size!(lattice_size)`
+
+    This function accepts two integers or a tuple of two integers as arguments.
+
+    Note that if no hamiltonian was generated since module import, you will definitely get this error if you try to evaluate some other operator.
+    Do not do it. Please.

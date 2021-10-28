@@ -29,7 +29,7 @@ macro symm(B, center=nothing)
         end
     else 
         return quote
-            local c = [(_current_lattice_size .- 1)...] / 2 .+ 1
+            local c = [(CURRENT_LATTICE_SIZE .- 1)...] / 2 .+ 1
             @inline A(r::Vector{Float64})::Vector{Float64} = [-r[2] + c[2], r[1] - c[1]] * $(esc(B)) / 2
         end
     end
@@ -51,7 +51,7 @@ macro flux(Φ, point=nothing)
         end
     else 
         return quote
-            local c = [(_current_lattice_size .- 1)...] / 2 .+ 1
+            local c = [(CURRENT_LATTICE_SIZE .- 1)...] / 2 .+ 1
             @inline A(r::Vector{Float64}) = normalize([-r[2] + c[2], r[1] - c[1]]) * $(esc(Φ))
         end
     end

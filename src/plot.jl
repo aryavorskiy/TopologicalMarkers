@@ -14,7 +14,7 @@ Draws boundaries between different zones described by the `zone_mapping` matrix.
 
 All keyword arguments will be passed to the `plot!` function used for drawing - this can be used to change the line thickness or style, for example.
 """
-function plot_boundaries!(pl::AbstractPlot, zone_mapping::CoordinateRepr; color=:black, kw...)::Plots.plot
+function plot_boundaries!(pl::AbstractPlot, zone_mapping::CoordinateRepr; color=:black, kw...)
     local lattice_size = size(zone_mapping)
     for i in 1:lattice_size[1] - 1, j in 1:lattice_size[2] - 1
         if zone_mapping[i, j] != zone_mapping[i + 1, j]
@@ -27,7 +27,7 @@ function plot_boundaries!(pl::AbstractPlot, zone_mapping::CoordinateRepr; color=
     return pl
 end
 
-plot_boundaries!(zone_mapping::AbstractMatrix; kw...)::Plots.Plot =
+plot_boundaries!(zone_mapping::AbstractMatrix; kw...) =
     plot_boundaries!(current(), zone_mapping; kw...)
 
 _unchain_arg(arg) = 
@@ -110,7 +110,7 @@ or a linear operator matrix (then the `CoordinateRepr` will be generated automat
 - `currents`: a matrix containing currents between sites
 - `xlims` and `ylims`: objects of type `Tuple{Int, Int}` that define the limits of the x- and y- axes respectively
 
-All keyword arguments with different prefixes are passed th the `plot!` function:
+All keyword arguments with different prefixes are passed to the `plot!` function:
 - `hmap` for the heatmap
 - `bounds` for the boundaries
 - `currents` for the quiver
@@ -144,7 +144,7 @@ end
 
 """
     plot_auto(<arguments>; <keyword arguments>)
-Plots multiple heatmaps, slices or currents simultaneously.
+Plots multiple heatmaps, split split_views or currents simultaneously.
 
 The subplots are automatically arranged into an optimal layout.
 
@@ -153,13 +153,13 @@ The subplots are automatically arranged into an optimal layout.
 Each argument can be either a `CoordinateRepr` object or a chain of pairs.
 """
 function plot_auto(args...; layout=nothing, plot_size=nothing, zone_mapping::N{CoordinateRepr}=nothing, title="",
-     control_site=nothing, control_sites::AbstractVector{NTuple{2,Int}}=Vector{NTuple{2,Int}}(), lattice_size=nothing, kw...)
+     split_view=nothing, split_views::AbstractVector{NTuple{2,Int}}=Vector{NTuple{2,Int}}(), lattice_size=nothing, kw...)
     lattice_size = _try_get_lattice_size(lattice_size)
     sites = []
-    if control_site !== nothing
-        push!(sites, control_site)
+    if split_view !== nothing
+        push!(sites, split_view)
     end
-    append!(sites, control_sites)
+    append!(sites, split_views)
     plots_total = length(args) + length(sites)
     
     # Generate plot
@@ -175,7 +175,7 @@ function plot_auto(args...; layout=nothing, plot_size=nothing, zone_mapping::N{C
     p = plot(layout=layout, size=plot_size)
 
     marker_kw = _keys_by_prefix(kw, "marker")
-    slice_kw = _keys_by_prefix(kw, "slice")
+    split_kw = _keys_by_prefix(kw, "split")
 
     # Process args
     for i in 1:length(args)
@@ -184,9 +184,9 @@ function plot_auto(args...; layout=nothing, plot_size=nothing, zone_mapping::N{C
         plot_marker!(p[i]; hmap=repr, currents=cur, lattice_size=lattice_size, zone_mapping=zone_mapping, kw...)
         for site_idx = 1:length(sites)
             site = sites[site_idx]
-            p_slice = p[site_idx + length(args)];
-            plot!(p_slice, repr[:, site[2]]; title="@ $site", lab=tit, slice_kw...)
-            vline!(p_slice, )
+            p_split = p[site_idx + length(args)];
+            plot!(p_split, repr[:, site[2]]; title="@ $site", lab=tit, split_kw...)
+            vline!(p_split, )
             hline!(p[i], [site[2]]; lab=nothing, marker_kw...)
             plot!(p[i], [site]; st=:scatter, lab=nothing, marker_kw...)
         end

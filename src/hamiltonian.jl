@@ -1,19 +1,6 @@
 using Logging
 import LinearAlgebra: eigen
 
-_current_lattice_size = nothing
-
-function _try_get_lattice_size(lattice_size::SizeType) 
-    if lattice_size !== nothing
-        return lattice_size
-    end
-    if _current_lattice_size !== nothing
-        return _current_lattice_size
-    else
-        error("Please specify lattice size explicitly")
-    end
-end
-
 function _set_hopping!(H::Matrix{ComplexF64}, i::Int, j::Int, hop::Matrix)
     H[2 * i - 1:2 * i, 2 * j - 1:2 * j] = hop
     H[2 * j - 1:2 * j, 2 * i - 1:2 * i] = hop'
@@ -21,7 +8,7 @@ end
 
 function _hamiltonian(m_repr::CoordinateRepr, pbc::Tuple{Bool, Bool})::Matrix{ComplexF64}
     lattice_size = size(m_repr)
-    global _current_lattice_size = lattice_size
+    _set_lattice_size!(lattice_size)
     H = zeros(ComplexF64, (prod(lattice_size) * 2, prod(lattice_size) * 2))
 
     # Generate diagonal elements

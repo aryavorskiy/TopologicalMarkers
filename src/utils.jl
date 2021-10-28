@@ -3,6 +3,27 @@ using RecipesBase
 N{T} = Union{T,Nothing}
 SizeType = N{NTuple{2,Int}}
 
+# Lattice size stored here
+
+CURRENT_LATTICE_SIZE = nothing
+
+function _try_get_lattice_size(lattice_size::SizeType) 
+    if lattice_size !== nothing
+        return lattice_size
+    end
+    if CURRENT_LATTICE_SIZE !== nothing
+        return CURRENT_LATTICE_SIZE
+    else
+        error("Please specify lattice size explicitly")
+    end
+end
+
+function _set_lattice_size!(lattice_size::NTuple{2, Int})
+    global CURRENT_LATTICE_SIZE = lattice_size
+end
+
+_set_lattice_size!(a::Int, b::Int) = _set_lattice_size!((a, b))
+
 # Pauli matrices
 const σ_x = [0 1; 1 0]
 const σ_y = [0 -1im; 1im 0]

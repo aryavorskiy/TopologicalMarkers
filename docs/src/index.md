@@ -27,12 +27,12 @@ X, Y = coord_operators()
 ch = -4π * im * P * X * P * Y * P
 
 B = 0.01
-Hb = hamiltonian(m_lattice, :c, field=@landau(B))
+Hb = hamiltonian(m_lattice, :c, field = @landau(B))
 Pb = filled_projector(Hb)
 str = (Pb - P) / B
 
 plot_auto("LCM" => ch, "Streda" => str, 
-    hmapclims=(-1.5, 1.5), currentscolor=:yellow, control_site=(13, 13), markercolor=:brown)
+    hmapclims = (-1.5, 1.5), currentscolor = :yellow, split_view = (13, 13), markercolor = :brown)
 ```
 
 See (Hamiltonian generation)[@ref] and (Visualization)[@ref] for detailed explanation.
@@ -51,18 +51,18 @@ time_domain = 0:0.5:τ
 
 H0 = hamiltonian(ms)
 P0 = filled_projector(H0)
-h(t) = hamiltonian(ms, field=@symm(Bf * t / τ))
+h(t) = hamiltonian(ms, field = @symm(Bf * t / τ))
 a = Animation()
 @evolution [
     :ham => h => H,
     P0 => h => P
 ] for t in time_domain
     cur = currents(H, P)
-    plot_auto("Local density" => P => cur * 100, hmapclims=(0.9, 1.1))
+    plot_auto("Local density" => P => cur * 100, plot_size = (800, 600), hmapclims = (0.9, 1.1))
     frame(a)
 end
 
-gif(a, "example_animation.gif", fps=10)
+gif(a, "example_animation.gif", fps = 10)
 ```
 
 See (Unitary evolution)[@ref] for detailed explanation.

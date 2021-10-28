@@ -16,12 +16,12 @@ This macro can be quite useful if your hamiltonian depends on time or if there a
 What you need is a function that takes the time and returns the matrix of the hamiltonian at that moment of time:
 
 ```julia
-h(t) = hamiltonian(ms, field=@symm(Bf * t / τ))
+h(t) = hamiltonian(ms, field = @symm(Bf * t / τ))
 ```
 
 Here `h(t)` describes the magnetic field being adiabatically turned on.
 
-Let's take a look at the example 2 from the [Home](index.md) section.
+Let's take a look at the example 2 from the [Home/Examples](index.md#Examples) section.
 The `@evolution` macro creates a block where the hamiltonian and density matrices are evaluated for the given time interval. 
 It takes two arguments - a list/vector with evolution specifiers and a for-loop that iterates over the time interval:
 
@@ -33,7 +33,7 @@ a = Animation()
     P0 => h => P
 ] for time in time_domain
     cur = currents(H, P)
-    plot_auto("Local density" => P => cur * 40, hmapclims=(0.98, 1.02))
+    plot_auto("Local density" => P => cur * 40, hmapclims = (0.98, 1.02))
     frame(a)
 end
 ```
