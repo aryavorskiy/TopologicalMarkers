@@ -2,7 +2,6 @@
 
 ```@index
 Modules = [TopologicalMarkers]
-Filter = f -> (n = String(nameof(f)); !(startswith(n, "@J")) && n != "@currents")
 ```
 
 ## Hamiltonian matrix
@@ -10,7 +9,7 @@ Filter = f -> (n = String(nameof(f)); !(startswith(n, "@J")) && n != "@currents"
 ```@docs
 hamiltonian
 field!
-zones!
+domains!
 @landau
 @symm
 @flux
@@ -24,7 +23,7 @@ filled_projector
 currents
 ```
 
-## LCM currents
+## Bianca-Resta currents
 
 ```@autodocs
 Modules = [TopologicalMarkers]
@@ -48,10 +47,10 @@ quiver_data
 
 ## Plotting shorthands
 
-These functions may come in handy when you want to plot many marker heatmaps and electric current diagrams in one line.
+These functions may come in handy when you want to plot many heatmaps and electric current diagrams in one line.
 
 ```@docs
 plot_boundaries!
-plot_marker!
+plot_figure!
 plot_auto
 ```

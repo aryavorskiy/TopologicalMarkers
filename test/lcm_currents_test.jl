@@ -14,7 +14,7 @@ end
         :ham => get_ham => current_ham,
         P => get_ham => P_ev
     ] for t in 0:5:30
-        js_lambda = @J_best current_ham P_ev X Y
+        js_lambda = @J_treq current_ham P_ev X Y
         js = [js_lambda(i, j) for i in 1:prod(siz), j in 1:prod(siz)]
         js2 = @currents js_lambda
         @test maximum(js + js') < 1e-12

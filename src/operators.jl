@@ -7,7 +7,7 @@ Returns a tuple of coordinate operators (i. e. $\hat{X}$ and $\hat{Y}$).
 
 # Arguments
 - `lattice_size`: the size of the lattice
-- `symmetric`: defines if the operators are symmetricall (in other words, if the center of the lattice corresponds to `(0, 0)`)
+- `symmetric`: true if the operator is symmetrically defined (in other words, the central site of the lattice corresponds to `(0, 0)`), false otherwise. True by default
 """
 function coord_operators(lattice_size::SizeType; 
     symmetric::Bool=true)::NTuple{2,Matrix{Float64}}
@@ -27,10 +27,10 @@ end
 
 coord_operators(; kw...) = coord_operators(nothing; kw...)
 
-"""
+@doc raw"""
     filled_projector(H[, energy_thr=0])
 
-Returns a projector onto the filled states (in other words, a ground state density matrix).
+Returns a projector onto the filled states (a ground state density matrix for $T = 0$).
 
 # Arguments
 - `H`: the hamiltonian matrix
@@ -48,9 +48,9 @@ end
 Returns a skew-symmetric matrix of electric currents between sites.
 
 # Arguments
-- `H`: the hamiltonian matrix.
-- `P`: the density matrix.
-- `lattice_size`: the size of the lattice the hamiltonian is defined for.
+- `H`: the hamiltonian matrix
+- `P`: the density matrix
+- `lattice_size`: the size of the lattice the hamiltonian is defined for
 """
 function currents(H::AbstractMatrix{Complex{T}}, P::AbstractMatrix{Complex{T}}, lattice_size::SizeType=nothing) where T <: Real
     lattice_size = _try_get_lattice_size(lattice_size)

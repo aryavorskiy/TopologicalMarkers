@@ -54,15 +54,15 @@ end
         global X, Y = coord_operators()
         plot_auto("Streda" => streda => curr_b,
         "LCM" => 4π * im * P * X * P * Y * P,
-        split_view=(8, 8), lattice_size=siz)
+        cutaway_view=(8, 8))
         print("Auto plot timing: ")
         @time plot_auto(streda => curr_b,
         "LCM" => 4π * im * P * X * P * Y * P,
-        split_view=(8, 8), lattice_size=siz)
+        cutaway_view=(8, 8))
 
         pl = plot()
-        currs = @currents @J_best ham_b P X Y
-        plot_marker!(pl, hmap=4π * im * P * X * P * Y * P, currents=currs, xlims=(6,10), ylims=(8, 12))
+        currs = @currents @J_treq ham_b P X Y
+        plot_figure!(pl, hmap=4π * im * P * X * P * Y * P, currents=currs, xlims=(6,10), ylims=(8, 12))
     end
 
     @testset "Density currents" begin

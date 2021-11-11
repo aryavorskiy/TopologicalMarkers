@@ -12,8 +12,10 @@ To install it, simply copy this line to julia's REPL and execute it:
 
 ## Examples
 
+### Different local markers in an equilibrium
+
 Let us take a Chern insulator, set the $m$ parameter to $-1$ in the middle of the lattice and $1$ everywhere else,
-and then evaluate the local Chern marker using both traditional and Streda formulas (i. e. the linear response of the local density to the magnetic field):
+and then evaluate the local Chern marker using both Bianca-Resta and Streda formulas (i. e. the linear response of the local density to the magnetic field):
 
 ```@example
 using TopologicalMarkers
@@ -31,14 +33,16 @@ Hb = hamiltonian(m_lattice, :c, field = @landau(B))
 Pb = filled_projector(Hb)
 str = (Pb - P) / B
 
-plot_auto("LCM" => ch, "Streda" => str, 
-    hmapclims = (-1.5, 1.5), currentscolor = :yellow, split_view = (13, 13), markercolor = :brown)
+plot_auto("Bianca-Resta" => ch, "Streda" => str, 
+    hmapclims = (-1.5, 1.5), currentscolor = :yellow, cutaway_view = (13, 13), markercolor = :brown)
 ```
 
-See (Hamiltonian generation)[@ref] and (Visualization)[@ref] for detailed explanation.
+See [Hamiltonian generation](@ref) and [Visualization](@ref) for detailed explanation.
 
-Another good example is a problem where unitary evolution is used. 
-Here we create an animation of the local density changing during adiabatic magnetic field-on:
+### Adiabatic flux quantum application
+
+Now suppose we want to watch how the particle density and electric currents react to adiabatic flux quantum appearance.
+The Chern insulator is in topological phase, with $m = 1$.
 
 ```@example
 using TopologicalMarkers
@@ -51,7 +55,7 @@ time_domain = 0:0.5:τ
 
 H0 = hamiltonian(ms)
 P0 = filled_projector(H0)
-h(t) = hamiltonian(ms, field = @symm(Bf * t / τ))
+h(t) = hamiltonian(ms, field = @flux(Bf * t / τ))
 a = Animation()
 @evolution [
     :ham => h => H,
@@ -65,4 +69,4 @@ end
 gif(a, "example_animation.gif", fps = 10)
 ```
 
-See (Unitary evolution)[@ref] for detailed explanation.
+See [Unitary evolution](@ref) for detailed explanation.

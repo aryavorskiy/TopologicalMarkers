@@ -23,22 +23,22 @@ H2 = hamiltonian(m_lattice, :n)
 H1 == H2 # These are equal ways to specify the m_lattice parameter
 ```
 
-There is an ability to isolate some sites from other ones. To do that, a `zone_mapping` matrix is required. 
-It is a `CoordinateRepr{Symbol}` object, which maps lattice sites to symbols, where different symbols mean different zones, 
-and hoppings between sites in different zones are set to zero.
-You can define the mapping in the `hamiltonian` function call, or apply it to an existing hamiltonian matrix using the `zones!` function:
+There is an ability to isolate some sites from other ones. To do that, a `domain_mapping` matrix is required. 
+It is a `CoordinateRepr{Symbol}` object, which maps lattice sites to symbols, where different symbols mean different domains, 
+and hoppings between sites in different domains are set to zero.
+You can define the mapping in the `hamiltonian` function call, or apply it to an existing hamiltonian matrix using the `domains!` function:
 
 ```@example ham_test
 m_lattice = ones(15, 15)
 
-mapping = CoordinateRepr(fill(:zone1, 15, 15))
-mapping[6:10, 6:10] .= :zone2
+mapping = CoordinateRepr(fill(:domain1, 15, 15))
+mapping[6:10, 6:10] .= :domain2
 
-H1 = hamiltonian(m_lattice, :n, zone_mapping = mapping)
+H1 = hamiltonian(m_lattice, :n, domain_mapping = mapping)
 H2 = hamiltonian(m_lattice, :n)
-zones!(H2, mapping)
+domains!(H2, mapping)
 
-H1 == H2 # These are equal ways to specify the zone mapping
+H1 == H2 # These are equal ways to specify the domain mapping
 ```
 
 You also can apply some magnetic field to the Chern insulator. 
@@ -61,7 +61,7 @@ field!(H2, @landau(B))
 H0 == H1 == H2 # These are equal ways to specify the field
 ```
 
-## Other linear operators
+## Density and coordinate operators
 
 To calculate a density matrix for zero temperature, you can use the [`filled_projector`](@ref) function. 
 It accepts the hamiltonian matrix and returns a density matrix. You can also specify the Fermi level (which is zero by default).
@@ -125,7 +125,7 @@ a = Animation()
     P0 => h => P
 ] for t in 0:0.1:3
     c = -4pi * im * P * X * P * Y * P
-    cur = @currents @J_best H P X Y
+    cur = @currents @J_treq H P X Y
     plot_auto("LCM currents" => c => cur / 5, hmapclims = (-4, 1))
     frame(a)
 end

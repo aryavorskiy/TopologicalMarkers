@@ -5,30 +5,30 @@ AbstractPlot = Union{Subplot,Plot}
 # Boundary visualization
 
 """
-    plot_boundaries!([pl, ]zone_mapping; <keyword arguments>)
-Draws boundaries between different zones described by the `zone_mapping` matrix.
+    plot_boundaries!([pl, ]domain_mapping; <keyword arguments>)
+Draws boundaries between different domains described by the `domain_mapping` matrix.
 
 # Arguments
 - `pl`: a `Plots.Plot` object to visualize data on
-- `zone_mapping`: a `CoordinateRepr` object that represents zone mapping. The boundaries between different zones will be drawn
+- `domain_mapping`: a `CoordinateRepr` object that represents domain mapping. The boundaries between different domains will be drawn
 
 All keyword arguments will be passed to the `plot!` function used for drawing - this can be used to change the line thickness or style, for example.
 """
-function plot_boundaries!(pl::AbstractPlot, zone_mapping::CoordinateRepr; color=:black, kw...)
-    local lattice_size = size(zone_mapping)
+function plot_boundaries!(pl::AbstractPlot, domain_mapping::CoordinateRepr; color=:black, kw...)
+    local lattice_size = size(domain_mapping)
     for i in 1:lattice_size[1] - 1, j in 1:lattice_size[2] - 1
-        if zone_mapping[i, j] != zone_mapping[i + 1, j]
+        if domain_mapping[i, j] != domain_mapping[i + 1, j]
             plot!(pl, [(i + 0.5, j - 0.5), (i + 0.5, j + 0.5)]; lab="", color=color, kw...)
         end
-        if zone_mapping[i, j] != zone_mapping[i, j + 1]
+        if domain_mapping[i, j] != domain_mapping[i, j + 1]
             plot!(pl, [(i - 0.5, j + 0.5), (i + 0.5, j + 0.5)]; lab="", color=color, kw...)
         end
     end
     return pl
 end
 
-plot_boundaries!(zone_mapping::AbstractMatrix; kw...) =
-    plot_boundaries!(current(), zone_mapping; kw...)
+plot_boundaries!(domain_mapping::AbstractMatrix; kw...) =
+    plot_boundaries!(current(), domain_mapping; kw...)
 
 _unchain_arg(arg) = 
     arg isa Pair ? Any[_unchain_arg(arg.first)..., _unchain_arg(arg.second)...] : Any[arg]
@@ -98,15 +98,15 @@ function _keys_by_prefix(dct::Iterators.Pairs, prefix::AbstractString)
 end
 
 """
-    plot_marker!(pl; <keyword arguments>)
+    plot_figure!(pl; <keyword arguments>)
 
-Plots complicated marker data series (heatmap, boundaries, quiver) on a single figure.
+Plots complicated splitline data series (heatmap, boundaries, quiver) on a single figure.
 
 # Arguments
 - `pl`: a `Plots.Plot` object to visualize data on
 - `hmap`: data to be visualized on a heatmap. It can be a `CoordinateRepr` object (then it will be plotted directly) 
 or a linear operator matrix (then the `CoordinateRepr` will be generated automatically)
-- `zone_mapping`: a `CoordinateRepr` object that represents zone mapping. The boundaries between different zones will be drawn.
+- `domain_mapping`: a `CoordinateRepr` object that represents domain mapping. The boundaries between different domains will be drawn.
 - `currents`: a matrix containing currents between sites
 - `xlims` and `ylims`: objects of type `Tuple{Int, Int}` that define the limits of the x- and y- axes respectively
 
@@ -117,9 +117,9 @@ All keyword arguments with different prefixes are passed to the `plot!` function
 
 This can be used to style the plot:
 
-`plot_marker!(..., hmapclims=(-3, 3), boundsstyle=:dot, :currentscolor=:green)`
+`plot_figure!(..., hmapclims=(-3, 3), boundsstyle=:dot, :currentscolor=:green)`
 """
-function plot_marker!(pl::AbstractPlot; hmap=nothing, currents=nothing, zone_mapping=nothing, xlims::SizeType=nothing, ylims::SizeType=nothing,
+function plot_figure!(pl::AbstractPlot; hmap=nothing, currents=nothing, domain_mapping=nothing, xlims::SizeType=nothing, ylims::SizeType=nothing,
     lattice_size::SizeType=nothing, kw...)
     lattice_size = _try_get_lattice_size(lattice_size)
     hmap_kw = _keys_by_prefix(kw, "hmap")
@@ -130,8 +130,8 @@ function plot_marker!(pl::AbstractPlot; hmap=nothing, currents=nothing, zone_map
     if hmap !== nothing
         heatmap!(pl, _obtain_repr(hmap, lattice_size); hmap_kw...)
     end
-    if zone_mapping !== nothing
-        plot_boundaries!(pl, zone_mapping; bounds_kw...)
+    if domain_mapping !== nothing
+        plot_boundaries!(pl, domain_mapping; bounds_kw...)
     end
     if currents !== nothing
         ps, qs = quiver_data(currents, lattice_size, xlims=xlims, ylims=ylims)
@@ -144,7 +144,7 @@ end
 
 """
     plot_auto(<arguments>; <keyword arguments>)
-Plots multiple heatmaps, split split_views or currents simultaneously.
+Plots multiple heatmaps, cutaway views or currents simultaneously.
 
 The subplots are automatically arranged into an optimal layout.
 
@@ -152,14 +152,14 @@ The subplots are automatically arranged into an optimal layout.
 
 Each argument can be either a `CoordinateRepr` object or a chain of pairs.
 """
-function plot_auto(args...; layout=nothing, plot_size=nothing, zone_mapping::N{CoordinateRepr}=nothing, title="",
-     split_view=nothing, split_views::AbstractVector{NTuple{2,Int}}=Vector{NTuple{2,Int}}(), lattice_size=nothing, kw...)
+function plot_auto(args...; layout=nothing, plot_size=nothing, domain_mapping::N{CoordinateRepr}=nothing, title="",
+     cutaway_view=nothing, cutaway_views::AbstractVector{NTuple{2,Int}}=Vector{NTuple{2,Int}}(), lattice_size=nothing, kw...)
     lattice_size = _try_get_lattice_size(lattice_size)
     sites = []
-    if split_view !== nothing
-        push!(sites, split_view)
+    if cutaway_view !== nothing
+        push!(sites, cutaway_view)
     end
-    append!(sites, split_views)
+    append!(sites, cutaway_views)
     plots_total = length(args) + length(sites)
     
     # Generate plot
@@ -174,21 +174,21 @@ function plot_auto(args...; layout=nothing, plot_size=nothing, zone_mapping::N{C
     end
     p = plot(layout=layout, size=plot_size)
 
-    marker_kw = _keys_by_prefix(kw, "marker")
-    split_kw = _keys_by_prefix(kw, "split")
+    splitline_kw = _keys_by_prefix(kw, "splitline")
+    cutaway_kw = _keys_by_prefix(kw, "cutaway")
 
     # Process args
     for i in 1:length(args)
         repr, tit, cur = _expand_arg(args[i], lattice_size)
         plot!(p[i], title=tit)
-        plot_marker!(p[i]; hmap=repr, currents=cur, lattice_size=lattice_size, zone_mapping=zone_mapping, kw...)
+        plot_figure!(p[i]; hmap=repr, currents=cur, lattice_size=lattice_size, domain_mapping=domain_mapping, kw...)
         for site_idx = 1:length(sites)
             site = sites[site_idx]
-            p_split = p[site_idx + length(args)];
-            plot!(p_split, repr[:, site[2]]; title="@ $site", lab=tit, split_kw...)
-            vline!(p_split, )
-            hline!(p[i], [site[2]]; lab=nothing, marker_kw...)
-            plot!(p[i], [site]; st=:scatter, lab=nothing, marker_kw...)
+            p_cutaway = p[site_idx + length(args)];
+            plot!(p_cutaway, repr[:, site[2]]; title="@ $site", lab=tit, cutaway_kw...)
+            vline!(p_cutaway, )
+            hline!(p[i], [site[2]]; lab=nothing, splitline_kw...)
+            plot!(p[i], [site]; st=:scatter, lab=nothing, splitline_kw...)
         end
         xlims!(p[i], (0, lattice_size[1] + 1))
         ylims!(p[i], (0, lattice_size[2] + 1))

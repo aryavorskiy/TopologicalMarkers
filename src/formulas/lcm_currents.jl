@@ -1,15 +1,13 @@
 get_curr(operator, i, j) = operator[2 * i - 1:2 * i, 2 * j - 1:2 * j]
 
-# LCM current macros
-
-# TODO everywhere \langle r | | r' \rangle \langle r' | | r \rangle 
+# Bianca-Resta current macros
 
 @doc raw"""
     @J_c(H, P, X, Y)
 
-Calculates the LCM current part using the following formula:
+Calculates the Bianca-Resta current part using the following formula:
 
-$J_c(r, r') = 4\pi ( 
+$J_c(r, r') = \\ 4\pi ( 
 \langle r | PXPYP | r' \rangle \langle r' | H | r \rangle -
 \langle r | H | r' \rangle \langle r' | PXPYP | r \rangle
 )$
@@ -27,9 +25,9 @@ end
 @doc raw"""
     @J_m(H, P, X, Y)
 
-Calculates the LCM current part using the following formula:
+Calculates the Bianca-Resta current part using the following formula:
 
-$J_m(r, r') = 4\pi ( 
+$J_m(r, r') = \\ 4\pi ( 
 \langle r | PHXP | r' \rangle \langle r' | PYP | r \rangle -
 \langle r | PYP | r' \rangle \langle r' | PHXP | r \rangle \\ -
 \langle r | PHYP | r' \rangle \langle r' | PXP | r \rangle +
@@ -53,9 +51,9 @@ end
 @doc raw"""
     @J_eq(H, P, X, Y)
 
-Calculates the LCM current part using the following formula:
+Calculates the Bianca-Resta current part using the following formula:
 
-$J_{eq}(r, r') = 4\pi ( 
+$J_{eq}(r, r') = \\ 4\pi ( 
 \langle r | [P,H]XP | r' \rangle \langle r' | PYP | r \rangle -
 \langle r | PYP | r' \rangle \langle r' | [P,H]XP | r \rangle \\ -
 \langle r | [P,H]YP | r' \rangle \langle r' | PXP | r \rangle +
@@ -77,11 +75,11 @@ macro J_eq(H, P, X, Y)
 end
 
 @doc raw"""
-    @J_m_inv(H, P, X, Y)
+    @J_m_tr(H, P, X, Y)
 
-Calculates the LCM current part using the following formula:
+Calculates the Bianca-Resta current part using the following formula:
 
-$J_{m_{inv}}(r, r') = 4\pi ( 
+$J_{m_{tr}}(r, r') = \\ 4\pi ( 
 \langle r | P | r' \rangle \langle r' | [H,X] PYP | r \rangle -
 \langle r | [H,X] PYP | r' \rangle \langle r' | P | r \rangle \\ -
 \langle r | PYP | r' \rangle \langle r' | [H,X] P | r \rangle +
@@ -92,9 +90,9 @@ $J_{m_{inv}}(r, r') = 4\pi (
 \langle r | [H,Y] P | r' \rangle \langle r' | PXP | r \rangle
 )$
 """
-macro J_m_inv(H, P, X, Y)
+macro J_m_tr(H, P, X, Y)
     quote
-        global J_type = "J_m_inv"
+        global J_type = "J_m_tr"
         local P = $(esc(P))
         local Jx =  $(esc(:($H * $X - $X * $H)))
         local Jy =  $(esc(:($H * $Y - $Y * $H)))
@@ -115,11 +113,11 @@ macro J_m_inv(H, P, X, Y)
 end
 
 @doc raw"""
-    @J_best(H, P, X, Y)
+    @J_treq(H, P, X, Y)
 
-Calculates the LCM current part using the following formula:
+Calculates the Bianca-Resta current part using the following formula:
 
-$J_{best}(r, r') = 4\pi ( 
+$J_{treq}(r, r') = \\ 4\pi ( 
 \langle r | [H,P] P | r' \rangle \langle r' | PXPYP | r \rangle -
 \langle r | PXPYP | r' \rangle \langle r' | [H,P] P | r \rangle \\ -
 \langle r | [H,P] P | r' \rangle \langle r' | PYPXP | r \rangle +
@@ -134,9 +132,9 @@ $J_{best}(r, r') = 4\pi (
 \langle r | PXP | r' \rangle \langle r' | P [H,P] YP | r \rangle
 )$
 """
-macro J_best(H, P, X, Y)
+macro J_treq(H, P, X, Y)
     quote        
-        global J_type = "J_best"
+        global J_type = "J_treq"
         local Pd = $(esc(:(($H * $P - $P * $H))))
         local P = $(esc(P))
         local X = $(esc(X))
@@ -175,15 +173,15 @@ macro J_inv(H, P, X, Y)
 end
 
 """
-    @J(H, P, X, Y)
+    @J_b(H, P, X, Y)
 
 Calculates the sum of `@J_c` and `@J_m` currents.
 """
-macro J(H, P, X, Y)
+macro J_b(H, P, X, Y)
     quote
         jc = $(esc(:(@J_c($H, $P, $X, $Y))))
         jm = $(esc(:(@J_m($H, $P, $X, $Y))))
-        global J_type = "J_mn"
+        global J_type = "J_b"
         curr_inv(i, j) = jc(i, j) + jm(i, j)
     end
 end
@@ -191,11 +189,11 @@ end
 """
     @currents(currents_lambda)
 
-Generates a matrix with currents, given a lambda/macrocall that takes lattice site indices and returns the current value.
+Generates a matrix with currents, given a lambda/macro call that takes lattice site indices and returns the current value.
 
 **Example usage:**
 
-`currents_mat = @currents @J H P X Y`
+`currents_mat = @currents @J_b H P X Y`
 """
 macro currents(call)
     if !(call isa Expr) || call.head != :macrocall
