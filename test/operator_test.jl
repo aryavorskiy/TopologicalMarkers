@@ -7,8 +7,8 @@
     field!(h, x -> [0, x[1]])
     zmap = fill(:ext, 3, 3)
     zmap[2,2] = :Int
-    zones!(h, CoordinateRepr(zmap))
-    zones!(h, zmap, :n)
+    domains!(h, CoordinateRepr(zmap))
+    domains!(h, zmap, :n)
 end
 
 @testset "Currents test" begin

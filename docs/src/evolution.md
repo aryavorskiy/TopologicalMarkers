@@ -1,4 +1,4 @@
-# Unitary evolution
+# [Unitary evolution](@id unitary_evolution)
 
 Suppose we want to study the behavior of some quantum system in time-dependent conditions. We can use the unitary evolution operator to describe how the density matrix depends on time:
 
@@ -13,7 +13,7 @@ It also stores the output data, so if you call it multiple times with the same i
 ## The evolution macro
 
 This macro can be quite useful if your hamiltonian depends on time or if there are multiple hamiltonians in your experiment.
-What you need is a function that takes the time and returns the matrix of the hamiltonian at that moment of time:
+Let us define a function that takes the time and returns the hamiltonian:
 
 ```julia
 h(t) = hamiltonian(ms, field = @symm(Bf * t / τ))
@@ -50,3 +50,10 @@ There are two options what these arguments can be:
 - The first argument is the `:ham` symbol. Then the second one is still the hamiltonian function, and the third one is the name for the hamiltonian matrix at the $t = \text{time}$ moment.
 
 So, in the example before in the for-loop body `H` stands for `h(time)`, and `P` is the evolved `P0` density matrix.
+
+!!! note
+    It is important that `arg2` must be a _function name_ - therefore you cannot use a lambda expression in such context. 
+    This is done with purpose to make the resulting code more readable.
+
+    Note that if the hamiltonian matrix does not depend on time, you still need to define a function. 
+    The reason is that it is nearly impossible to detect if it is a function name or a variable name at compile-time.

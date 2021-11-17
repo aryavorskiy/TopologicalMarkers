@@ -1,4 +1,5 @@
 using LinearAlgebra
+using ProgressMeter: @showprogress
 
 EVOL_STORED_SZ = 200
 
@@ -88,8 +89,7 @@ macro evolution(rules, loop)
         local len = length($(esc(loop_range)))
         local l = 60
         local counter = 0
-        for $(esc(loop_var)) in $(esc(loop_range))
-            pbar(counter / len, l)
+        @showprogress 0.5 "Performing unitary evolution..." for $(esc(loop_var)) in $(esc(loop_range))
             local dt = $(esc(loop_var)) - t_inner
             $p_evolvers
             $h_evaluated
@@ -97,7 +97,6 @@ macro evolution(rules, loop)
             t_inner = $(esc(loop_var))
             counter += 1
         end
-        print("\rProcessing complete!" * " "^l * "\r")
     end
     append!(main_block.args, new_loop.args)
     return main_block

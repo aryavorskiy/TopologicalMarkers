@@ -74,35 +74,35 @@ function field!(H::AbstractMatrix{<:Complex}, A::Function, lattice_size::SizeTyp
 end
 
 """
-    zones!(H, zone_mapping[, repr_spec])
+    domains!(H, domain_mapping[, repr_spec])
 
-Divides the Chern insulator hamiltonian into several unconnected zones. The hoppings between these zones are erased.
+Divides the Chern insulator hamiltonian into several unconnected domains. The hoppings between these domains are erased.
 
 # Arguments
 - `H`: the hamiltonian matrix
-- `zone_mapping`: an `AbstractMatrix{Symbol}` or `CoordinateRepr{Symbol}`. Each site is mapped to a symbol, different symbols mean different zones
-- `repr_spec`: if `zone_mapping` is an `AbstractMatrix{Symbol}`, this argument is a representation specifier (see `CoordinateRepr` docs for more information)
+- `domain_mapping`: an `AbstractMatrix{Symbol}` or `CoordinateRepr{Symbol}`. Each site is mapped to a symbol, different symbols mean different domains
+- `repr_spec`: if `domain_mapping` is an `AbstractMatrix{Symbol}`, this argument is a representation specifier (see `CoordinateRepr` docs for more information)
 """
-function zones!(H::Matrix{ComplexF64}, zone_mapping::CoordinateRepr{Symbol})
-    lattice_size = size(zone_mapping)
+function domains!(H::Matrix{ComplexF64}, domain_mapping::CoordinateRepr{Symbol})
+    lattice_size = size(domain_mapping)
     E = zeros(2, 2)
     for i in 1:lattice_size[1]
         for j in 1:lattice_size[2]
             i1 = pair_to_index(lattice_size, i, j)
             i2 = pair_to_index(lattice_size, i+1, j)
-            if zone_mapping[i1] != zone_mapping[i2]
+            if domain_mapping[i1] != domain_mapping[i2]
                 _set_hopping!(H, i1, i2, E)
             end
             i2 = pair_to_index(lattice_size, i, j+1)
-            if zone_mapping[i1] != zone_mapping[i2]
+            if domain_mapping[i1] != domain_mapping[i2]
                 _set_hopping!(H, i1, i2, E)
             end
         end
     end
 end
 
-zones!(H::Matrix{ComplexF64}, zone_mapping::AbstractMatrix{Symbol}, repr_spec::Symbol) = 
-    zones!(H, CoordinateRepr(zone_mapping, repr_spec))
+domains!(H::Matrix{ComplexF64}, domain_mapping::AbstractMatrix{Symbol}, repr_spec::Symbol) = 
+    domains!(H, CoordinateRepr(domain_mapping, repr_spec))
 
 @doc raw"""
     hamiltonian{T}((m_repr | m_lattice, repr_spec); <keyword arguments>)
@@ -119,7 +119,7 @@ h. c.$
 - `m_repr`: The value of `m` on different sites, in `CoordinateRepr` format
 Alternatively, pass a matrix and a representation specifier (see `CoordinateRepr` for more information)
 - `pbc`: Periodic boundary conditions. A `Tuple{Bool, Bool}`, each element sets boundary conditions for the horizontal and vertical edge respectively. Default is `(false, false)`
-- `zones`: A matrix with elements of arbitrary type, which maps sites to isolated zones. The hopping members between different zones are erased. There are no isolated zones by default
+- `domains`: A matrix with elements of arbitrary type, which maps sites to isolated domains. The hopping members between different domains are erased. There are no isolated domains by default
 - `field`: A function/lambda that takes two coordinates and returns the vector potential of the magnetic field. Used to calculate phase factors on hoppings. There is no magnetic field by default
 """
 function hamiltonian(m_repr::CoordinateRepr{Float64}; kw...)
@@ -138,8 +138,8 @@ function hamiltonian(m_repr::CoordinateRepr{Float64}; kw...)
     end
     H = _hamiltonian(m_repr, pbc)
 
-    process_kw(:zones, CoordinateRepr{Symbol}) do mapping
-        zones!(H, mapping)
+    process_kw(:domains, CoordinateRepr{Symbol}) do mapping
+        domains!(H, mapping)
     end
 
     process_kw(:field, Function) do A_fun
