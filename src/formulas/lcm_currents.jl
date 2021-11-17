@@ -51,7 +51,7 @@ end
 @doc raw"""
     @J_eq(H, P, X, Y)
 
-Calculates the Bianca-Resta current part using the following formula:
+Calculates the Bianca-Resta current using the following formula:
 
 $J_{eq}(r, r') = \\ 4\pi ( 
 \langle r | [P,H]XP | r' \rangle \langle r' | PYP | r \rangle -
@@ -115,7 +115,7 @@ end
 @doc raw"""
     @J_treq(H, P, X, Y)
 
-Calculates the Bianca-Resta current part using the following formula:
+Calculates the Bianca-Resta current using the following formula:
 
 $J_{treq}(r, r') = \\ 4\pi ( 
 \langle r | [H,P] P | r' \rangle \langle r' | PXPYP | r \rangle -

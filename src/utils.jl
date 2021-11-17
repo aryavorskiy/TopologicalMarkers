@@ -54,16 +54,3 @@ function adjacent_sites(lattice_size::NTuple{2,Int}, site::Vector{Int}, order::I
     end
     return adj
 end
-
-# Progressbar
-let previous_pct = -1.
-    global function pbar(progress::Real, len::Int=60; fill::Char='#', empty::Char='-')
-        fill_len = round(Int, progress * len)
-        pb = fill^fill_len * empty^(len - fill_len)
-        pct = round(progress * 100, digits=1)
-        if pct != previous_pct
-            print("\r [$pb] $pct%")
-            previous_pct = pct
-        end
-    end
-end

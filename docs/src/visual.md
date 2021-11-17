@@ -1,6 +1,6 @@
 # Visualization
 
-## Coordinate representation
+## [Coordinate representation](@id coord_repr)
 
 The [`CoordinateRepr`](@ref) struct is a workaround to deal with certain ambiguity of matrix graphical representations. 
 We usually index its elements row-first, and print the rows in ascending order (i. e. the natural representation). 
@@ -12,9 +12,7 @@ which tells if the matrix should be treated as _natural_ (`:n` or `:natural`) or
 
 Let us look at an example:
 
-```@example nat_repr
-using TopologicalMarkers, Plots
-
+```@example repr_comp
 mat = zeros(12, 12)
 mat[1:5, 1:5] .= 1
 mat[1:10, 6:10] .= -1
@@ -23,7 +21,9 @@ mat
 
 You can see how this matrix looks when printed in a _natural_ way. Let us look at a heatmap of both representations:
 
-```@example nat_repr
+```@example repr_comp
+using TopologicalMarkers, Plots
+
 p = plot(layout = (1, 2), size = (800, 300))
 heatmap!(p[1], title="'Natural' representation", CoordinateRepr(mat, :n))
 heatmap!(p[2], title="'Coordinate' representation", CoordinateRepr(mat, :c))
