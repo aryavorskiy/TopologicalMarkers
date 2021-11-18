@@ -23,7 +23,7 @@ filled_projector
 currents
 ```
 
-## Bianca-Resta currents
+## [Bianca-Resta currents](@id bianca_resta_currents)
 
 ```@autodocs
 Modules = [TopologicalMarkers]

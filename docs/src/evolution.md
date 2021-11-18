@@ -8,7 +8,7 @@ $\mathcal{U}(t) = T\left\{ e^{\frac{1}{i\hbar} \int_{t_0}^t \hat{H}(\tau) d\tau}
 ## The static evolution function
 
 The [`evolution_operator`](@ref) function calculates the evolution operator for a time-independent hamiltonian. 
-It also stores the output data, so if you call it multiple times with the same input, the output will be calculated only once.
+It caches all queries, so if you call it multiple times with the same input, the output will be calculated only once - this is done to reduce run time in cases where the hamiltonian does not depend on time.
 
 ## The evolution macro
 
@@ -16,14 +16,22 @@ This macro can be quite useful if your hamiltonian depends on time or if there a
 Let us define a function that takes the time and returns the hamiltonian:
 
 ```julia
-h(t) = hamiltonian(ms, field = @symm(Bf * t / τ))
+h(t) = hamiltonian(ms, field = @symm(Bf * t / min(t, τ)))
 ```
 
 Here `h(t)` describes the magnetic field being adiabatically turned on.
 
-Let's take a look at the example 2 from the [Home/Examples](index.md#Examples) section.
+Take a look at the example 2 from the [Home/Examples](index.md#Examples) section.
 The `@evolution` macro creates a block where the hamiltonian and density matrices are evaluated for the given time interval. 
 It takes two arguments - a list/vector with evolution specifiers and a for-loop that iterates over the time interval:
+
+!!! tip
+    If you want to speed up the evolution, you can use a simplified formula for the matrix exponent.
+    You can enable this setting with this line
+    
+    ```TopologicalMarkers._simplify_evolution!(true)```
+
+    Note that this setting is experimental and enabling it can result in significant precision loss.
 
 ```julia
 a = Animation()

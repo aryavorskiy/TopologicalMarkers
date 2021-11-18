@@ -1,9 +1,25 @@
 using LinearAlgebra
 using ProgressMeter: @showprogress
 
-EVOL_STORED_SZ = 200
+SIMPLIFY_EVOLUTION = false
+
+function _simplify_evolution!(enable::Bool)
+    global SIMPLIFY_EVOLUTION = enable
+end
+
+function walz_exp(A, k::Int)
+    B = one(A) + A/2^k
+    for _ in 1:k
+        B *= B
+    end
+    return B
+end
+
+simple_exp(A::AbstractMatrix) = walz_exp(A, 2)
+
 
 let store = Dict()
+    EVOL_STORED_SZ = 200
 @doc raw"""
     evolution_operator(H, t)
 
@@ -15,12 +31,12 @@ $ \mathcal{U}(t) = e^{-\frac{1}{i\hbar} \hat{H} t} $
 - `H`: the hamiltonian matrix
 - `t`: the evolution time
 """
-    global function evolution_operator(H::AbstractMatrix{<:Complex{<:Real}}, t::Real)
+    global function evolution_operator(H::AbstractMatrix{ComplexF64}, t::Real)
         if (H, t) ∉ keys(store)
             if length(store) > EVOL_STORED_SZ
                 store = Dict()
             end
-            store[(H, t)] = exp(im * H * t)
+            store[(H, t)] = SIMPLIFY_EVOLUTION ? simple_exp(im * H * t) : exp(im * H * t)
         end
         return store[(H, t)]
     end
@@ -89,7 +105,7 @@ macro evolution(rules, loop)
         local len = length($(esc(loop_range)))
         local l = 60
         local counter = 0
-        @showprogress 0.5 "Performing unitary evolution..." for $(esc(loop_var)) in $(esc(loop_range))
+        @showprogress 0.5 "Performing unitary evolution... " for $(esc(loop_var)) in $(esc(loop_range))
             local dt = $(esc(loop_var)) - t_inner
             $p_evolvers
             $h_evaluated

@@ -83,7 +83,7 @@ end
         end
     end
 
-    @testset "Adiabatic field on" begin
+    @testset "Adiabatic field on, simplified" begin
         time_domain = 0:0.1:30
         ms = CoordinateRepr(ones(15, 15))
         Bf = 0.01
@@ -93,14 +93,27 @@ end
         P0 = filled_projector(H0)
         h(t) = hamiltonian(ms, field=@landau(Bf * t / τ))
         a = Animation()
+        println("Unitary evolution timing:")
+        TopologicalMarkers._simplify_evolution!(false)
         @time @evolution [
             :ham => h => H,
             P0 => h => P
-        ] for t in 0:0.1:τ
+        ] for t in 0:1:τ
             cur = currents(H, P)
             plot_auto("f" => P => cur * 10, clims=(0.98, 1.02))
             frame(a)
         end
+        println("Simplified unitary evolution timing:")
+        TopologicalMarkers._simplify_evolution!(true)
+        @time @evolution [
+            :ham => h => H,
+            P0 => h => P
+        ] for t in 0:1:τ
+            cur = currents(H, P)
+            plot_auto("f" => P => cur * 10, clims=(0.98, 1.02))
+            frame(a)
+        end
+        TopologicalMarkers._simplify_evolution!(false)
     end
 end
 include("operator_test.jl")

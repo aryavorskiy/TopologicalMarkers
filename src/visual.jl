@@ -51,7 +51,7 @@ Generates a CoordinateRepr for values like $\langle r | \hat{\mathcal{O}} | r \r
 - `op`: the operator to find values for
 - `lattice_size`: the size of the lattice
 """
-function heatmap_data(op::AbstractMatrix{<:Complex{T}}, lattice_size::SizeType)::CoordinateRepr{T} where T <: Real
+function heatmap_data(op::AbstractMatrix{Complex{T}}, lattice_size::SizeType)::CoordinateRepr{T} where T <: Real
     lattice_size = _try_get_lattice_size(lattice_size)
     markers = zeros(T, lattice_size)
     for i in 1:prod(lattice_size)
