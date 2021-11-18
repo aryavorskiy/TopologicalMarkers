@@ -10,9 +10,6 @@ To install it, simply copy this line to julia's REPL and execute it:
 ]add https://github.com/aryavorskiy/TopologicalMarkers/
 ```
 
-!!! tip
-    Before you proceed, 
-
 ## Examples
 
 ### Different local markers in an equilibrium
@@ -24,7 +21,7 @@ and then evaluate the local Chern marker using both Bianca-Resta and Streda form
 using TopologicalMarkers
 using Plots
 
-# Set the m parameter to -1 on the while lattice
+# Set the m parameter to -1 on the whole lattice
 # Let the phase be topological
 m_lattice = ones(25, 25)
 m_lattice[11:15, 11:15] .= -1
@@ -41,7 +38,7 @@ Pb = filled_projector(Hb)
 str = (Pb - P) / B
 
 # Finally, plot everything
-plot_auto("Bianca-Resta" => ch, "Streda" => str, plot_size=(800, 600),
+plot_auto("Bianca-Resta" => ch, "Streda" => str, plot_size = (800, 600),
     hmapclims = (-1.5, 1.5), currentscolor = :yellow, cutaway_view = (13, 13), 
     markercolor = :brown)
 ```
@@ -57,7 +54,7 @@ The Chern insulator is in topological phase, with $m = 1$.
 using TopologicalMarkers
 using Plots
 
-# Set the m parameter to 1 on the while lattice
+# Set the m parameter to 1 on the whole lattice
 # Let the phase be topological again
 ms = CoordinateRepr(ones(15, 15))
 Bf = 0.01
@@ -89,5 +86,5 @@ gif(a, "example_animation.gif", fps = 10)
 See [Unitary evolution](@ref unitary_evolution) for detailed explanation.
 
 !!! tip
-    There are more examples of different use cases in this notebook: [github.com/aryavorskiy/TopologicalMarkers.jl/supplementary.ipynb]
+    There are more examples of different use cases in this notebook: [github.com/aryavorskiy/TopologicalMarkers.jl/supplementary.ipynb](https://www.youtube.com/watch?v=E4WlUXrJgy4)
     All pictures from the article were created using this notebook.

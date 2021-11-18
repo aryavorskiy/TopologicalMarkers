@@ -28,18 +28,22 @@ end
 coord_operators(; kw...) = coord_operators(nothing; kw...)
 
 @doc raw"""
-    filled_projector(H[, energy_thr=0])
+    filled_projector(H[, fermi_energy = 0, T = 0])
 
-Returns a projector onto the filled states (a ground state density matrix for $T = 0$).
+Returns a projector onto the filled states (in other words - a density matrix for).
 
 # Arguments
 - `H`: the hamiltonian matrix
-- `energy_thr`: the Fermi energy level
+- `fermi_energy`: the Fermi energy level
 """
-function filled_projector(H::Matrix{<:Complex{<:Real}}, energy_thr::Real=0)
+function filled_projector(H::Matrix{<:Complex{<:Real}}, fermi_energy::Float64 = 0., T::Float64 = 0.)
     val, vec = eigen(Hermitian(H))
-    d = (val .≤ energy_thr) .|> Int |> Diagonal
-    return Hermitian(vec * d * vec')
+    if T == 0 
+        d = @. val ≤ fermi_energy |> Int
+    else
+        d = @. 1 / (exp((val - fermi_energy) / T) + 1)
+    end
+    return Hermitian(vec * Diagonal(d) * vec')
 end
 
 """

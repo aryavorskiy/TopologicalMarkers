@@ -16,22 +16,22 @@
 
 The [`hamiltonian`](@ref) function can be used to generate a Chern insulator hamiltonian using the following formula:
 
-$\hat{H} = 
+$$\hat{H} = 
 \sum_i m_i c^\dagger_i \sigma_z c_i + 
 \sum_{x-links} c^\dagger_i \frac{\sigma_z - i \sigma_x}{2} c_j + 
 \sum_{y-links} c^\dagger_i \frac{\sigma_z - i \sigma_y}{2} c_j + 
-h. c.$
+h. c.$$
 
 The only essential parameter is `m_lattice` - it is a `CoordinateRepr` that defines the $m$ parameter for each site.
 There is an alternative way to set the `m_lattice` - with two arguments, a `Matrix` and a `Symbol` representation specifier.
 
 Here is an example of both usages:
 
-```@setup ham_test
+```@setup with_pkg
 using TopologicalMarkers
 ```
 
-```@example ham_test
+```@example with_pkg
 m_lattice = ones(15, 15)
 m_lattice[6:10, 7:11] .= -1
 m_repr = CoordinateRepr(m_lattice, :n)
@@ -46,7 +46,7 @@ It is a `CoordinateRepr{Symbol}` object, which maps lattice sites to symbols, wh
 and hoppings between sites in different domains are set to zero.
 You can define the mapping in the `hamiltonian` function call, or apply it to an existing hamiltonian matrix using the `domains!` function:
 
-```@example ham_test
+```@example with_pkg
 m_lattice = ones(15, 15)
 
 mapping = CoordinateRepr(fill(:domain1, 15, 15))
@@ -67,7 +67,7 @@ You can write your own function  use one of the magnetic field macros defined:
 - `@flux` for flux quantum
 You can define the field in the `hamiltonian` function or apply it to an existing hamiltonian matrix using the `field!` function:
 
-```@example ham_test
+```@example with_pkg
 m_lattice = ones(15, 15)
 B = 0.1
 
@@ -91,7 +91,7 @@ It takes an optional parameter `symm` which defines if the operators are defined
 
 Here is an example of usage of both functions to calculate the local Chern marker:
 
-```@example ham_test
+```@example with_pkg
 using Plots, LinearAlgebra
 
 m_lattice = ones(15, 15)
@@ -111,7 +111,7 @@ You can calculate electric currents using the [`currents`](@ref) function.
 It accepts the hamiltonian and the density matrix to produce a matrix with currents.
 Here is an example of electric currents in a magnetic field:
 
-```@example ham_test
+```@example with_pkg
 using Plots
 
 B = 0.1
@@ -127,8 +127,7 @@ There are several ways to calculate currents of the local Chern marker.
 For example, if we define it using the Bianca-Resta formula $c(r) = 4\pi i \langle r | PXQYP | r \rangle$, 
 we can define the current $J(r, r')$ as some formula that complies the following rules:
 
-$$
-\begin{cases}
+$$\begin{cases}
     d_t c(r) = \sum_{r'} J(r, r') \\
     J(r, r') = - J(r', r)
 \end{cases}, \hspace{0.5cm}
@@ -152,7 +151,7 @@ These traits of macros in this package are in the following table:
 |`J_eq`| No | Yes |
 |`J_treq`| Yes | Yes |
 
-To find out more about Bianca-Resta currents, [check out this section](scope.md#LCM-Currents).
+To find out more about Bianca-Resta currents, [check out this section](@ref bianca_resta_currents).
 
 Each one takes  and returns a function that calculates a current given indices of 2 sites.
 
@@ -160,7 +159,7 @@ To generate a matrix with currents, use the [`@currents`](@ref) macro.
 
 Here is an example animation of LCM behavior under after hamiltonian quench
 
-```@example ham_test
+```@example with_pkg
 using Plots
 
 H1 = hamiltonian(ones(15, 15), :c)
@@ -196,3 +195,56 @@ gif(a, "example_animation.gif", fps = 10)
 
     Note that if no hamiltonian was generated since module import, you will definitely get this error if you try to evaluate some other operator.
     Do not do it. Please.
+
+## Streda currents
+
+Another way to calculate the LCM currents is the Streda formula. 
+
+This formula defines the LCM as the linear response of the density to the adiabatic field application: $c(r) = \frac{\delta P(r)}{\delta B}$.
+Such approach allows to evaluate currents of LCM quite easily - it is simply the linear response of the electric currents to the magnetic field: 
+$J_{streda}(r, r') = \frac{\delta J(r, r')}{\delta B}$.
+
+Note that unlike Bianca-Resta currents, these currents are localized - the current between non-adjacent sites is always zero.
+
+These currents can be evaluated as follows:
+
+```@example with_pkg
+τ = 100
+time_domain = 0:1e-5:4τ
+
+TopologicalMarkers._set_lattice_size!(22, 21)
+X, Y = coord_operators()
+
+m0 = fill(-3, 22, 21)
+m0[6:12, 7:13] .= -1
+
+m1 = fill(-3, 22, 21)
+m1[7:13, 7:13] .= -1
+
+h(t) = hamiltonian(m0 + (m1 - m0) * min(1, t/τ), :c)
+
+B = 1e-6
+function hb(t)
+    local H = h(t)
+    field!(H, @landau(B))
+    return H
+end
+
+P0 = h(0) |> filled_projector
+P0b = hb(0) |> filled_projector
+
+a = Animation()
+@evolution [
+    :ham => h => H,
+    :ham => hb => Hb,
+    P0 => h => P,
+    P0b => hb => Pb,
+] for t in time_domain
+    cur = currents(H, P)
+    curb = currents(Hb, Pb)
+    plot_auto("Streda currents" => (Pb - P) / B => (curb - cur) / B, plot_title = "Time: $t")
+    frame(a)
+end
+
+gif(a, "streda.gif", fps=20)
+```

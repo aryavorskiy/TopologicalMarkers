@@ -1,9 +1,11 @@
+using StaticArrays
+
 @testset "Field macros" begin
     B = 1
     p = (3., 4)
     q = (6., 5)
-    x = Float64[2,3,4]
-    y = Float64[6,2,5]
+    x = SA[2., 3]
+    y = SA[6., 2]
     
     @testset "Landau gauge" begin
         A1 = @landau 1

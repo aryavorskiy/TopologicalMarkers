@@ -10,6 +10,9 @@ end
     ham = hamiltonian(ms)
     ham2 = hamiltonian(ms2)
     get_ham(_) = ham2
+
+    P = filled_projector(ham)
+    X, Y = coord_operators()
     @evolution [
         :ham => get_ham => current_ham,
         P => get_ham => P_ev
