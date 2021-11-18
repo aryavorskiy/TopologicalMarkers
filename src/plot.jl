@@ -37,9 +37,9 @@ _obtain_repr(obj, lattice_size::SizeType)::CoordinateRepr = obj isa CoordinateRe
 
 function _expand_arg(arg, lattice_size)
     mat_type = Union{AbstractMatrix,CoordinateRepr}
-    mat::N{CoordinateRepr} = nothing
+    mat::Nullable{CoordinateRepr} = nothing
     tit::AbstractString = ""
-    cur::N{AbstractMatrix} = nothing
+    cur::Nullable{AbstractMatrix} = nothing
 
     arg_list = _unchain_arg(arg)
     if arg_list[1] isa AbstractString
@@ -152,7 +152,7 @@ The subplots are automatically arranged into an optimal layout.
 
 Each argument can be either a `CoordinateRepr` object or a chain of pairs.
 """
-function plot_auto(args...; layout=nothing, plot_size=nothing, domain_mapping::N{CoordinateRepr}=nothing, title="",
+function plot_auto(args...; layout=nothing, plot_size=nothing, domain_mapping::Nullable{CoordinateRepr}=nothing, title="",
      cutaway_view=nothing, cutaway_views::AbstractVector{NTuple{2,Int}}=Vector{NTuple{2,Int}}(), lattice_size=nothing, kw...)
     lattice_size = _try_get_lattice_size(lattice_size)
     sites = []
