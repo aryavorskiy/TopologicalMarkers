@@ -31,6 +31,8 @@ It takes two arguments - a list/vector with evolution specifiers and a for-loop 
     
     ```TopologicalMarkers._simplify_evolution!(true)```
 
+    This setting also allows to use third-party linear algebra implementations such as `CUDA.jl` - these usually do not implement matrix exponent.
+
     Note that this setting is experimental and enabling it can result in significant precision loss.
 
 ```julia

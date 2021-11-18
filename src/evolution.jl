@@ -1,5 +1,5 @@
 using LinearAlgebra
-using ProgressMeter: @showprogress
+using ProgressMeter
 
 SIMPLIFY_EVOLUTION = false
 
@@ -97,21 +97,17 @@ macro evolution(rules, loop)
         end
     end
 
-    # Cleanup this
-
     push!(h_evaluated.args, :($(esc(loop_body))))
     local new_loop = quote
         local t_inner = 0.
         local len = length($(esc(loop_range)))
-        local l = 60
-        local counter = 0
-        @showprogress 0.5 "Performing unitary evolution... " for $(esc(loop_var)) in $(esc(loop_range))
+        p = Progress(len, dt=0.5, desc="Performing unitary evolution... ", barglyphs = BarGlyphs("[=> ]"), showspeed = true)
+        for $(esc(loop_var)) in $(esc(loop_range))
             local dt = $(esc(loop_var)) - t_inner
             $p_evolvers
             $h_evaluated
-
+            ProgressMeter.next!(p)
             t_inner = $(esc(loop_var))
-            counter += 1
         end
     end
     append!(main_block.args, new_loop.args)
