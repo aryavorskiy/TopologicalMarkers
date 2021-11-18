@@ -7,8 +7,8 @@ function _simplify_evolution!(enable::Bool)
     global SIMPLIFY_EVOLUTION = enable
 end
 
-function walz_exp(A, k::Int)
-    B = one(A) + A/2^k
+function walz_exp(A::AbstractMatrix, k::Int)
+    B = I + A/2^k
     for _ in 1:k
         B *= B
     end
@@ -101,7 +101,7 @@ macro evolution(rules, loop)
     local new_loop = quote
         local t_inner = 0.
         local len = length($(esc(loop_range)))
-        p = Progress(len, dt=0.5, desc="Performing unitary evolution... ", barglyphs = BarGlyphs("[=> ]"), showspeed = true)
+        p = Progress(len, dt=0.5, barglyphs = BarGlyphs("[=> ]"), showspeed = true)
         for $(esc(loop_var)) in $(esc(loop_range))
             local dt = $(esc(loop_var)) - t_inner
             $p_evolvers
