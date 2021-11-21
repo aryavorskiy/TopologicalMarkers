@@ -16,7 +16,7 @@ The matrix exponent is the heaviest linear algebra operation used in this projec
 To speed up calculations in some times, you can set up the matrix exponent to be calculated in a simpler way with this function:
 
 ```julia
-TopologicalMarkers._simplify_evolution!(simplify::Bool; <keyword arguments...>)
+TopologicalMarkers._configure_exp!(simplify::Bool; <keyword arguments...>)
 ```
 
 If the `simplify` parameter is set to to `true`, the matrix exponent is evaluated using the Taylor series.
