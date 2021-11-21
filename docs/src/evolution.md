@@ -8,7 +8,24 @@ $\mathcal{U}(t) = T\left\{ e^{\frac{1}{i\hbar} \int_{t_0}^t \hat{H}(\tau) d\tau}
 ## The static evolution function
 
 The [`evolution_operator`](@ref) function calculates the evolution operator for a time-independent hamiltonian. 
-It caches all queries, so if you call it multiple times with the same input, the output will be calculated only once - this is done to reduce run time in cases where the hamiltonian does not depend on time.
+Its input parameters are the hamiltonian matrix `H` and the time interval `t`.
+
+## Matrix exponent optimization
+
+The matrix exponent is the heaviest linear algebra operation used in this project. 
+To speed up calculations in some times, you can set up the matrix exponent to be calculated in a simpler way with this function:
+
+```julia
+TopologicalMarkers._configure_exp!(simplify::Bool; <keyword arguments...>)
+```
+
+If the `simplify` parameter is set to to `true`, the matrix exponent is evaluated using the Taylor series.
+You can set other parameters with following keywords:
+
+- `order`: The quantity of members of the Taylor expansion to be calculated
+- `threshold`: To avoid precision loss, if the `t` parameter is greater than `threshold`, the exponent will be evaluated using the `exp` function. Set to `nothing` to disable.
+- `cache`: This setting saves lots of time when performing evolution with constant hamiltonian. If the input parameters do not change, the evolution operator matrix will be stored
+which will help avoiding excessive matrix exponent calculations
 
 ## The evolution macro
 
@@ -16,7 +33,7 @@ This macro can be quite useful if your hamiltonian depends on time or if there a
 Let us define a function that takes the time and returns the hamiltonian:
 
 ```julia
-h(t) = hamiltonian(ms, field = @symm(Bf * t / min(t, τ)))
+h(t) = hamiltonian(ms, field = @symm(Bf * min(t, τ) / τ))
 ```
 
 Here `h(t)` describes the magnetic field being adiabatically turned on.
@@ -24,16 +41,6 @@ Here `h(t)` describes the magnetic field being adiabatically turned on.
 Take a look at the example 2 from the [Home/Examples](index.md#Examples) section.
 The `@evolution` macro creates a block where the hamiltonian and density matrices are evaluated for the given time interval. 
 It takes two arguments - a list/vector with evolution specifiers and a for-loop that iterates over the time interval:
-
-!!! tip
-    If you want to speed up the evolution, you can use a simplified formula for the matrix exponent.
-    You can enable this setting with this line
-    
-    ```TopologicalMarkers._simplify_evolution!(true)```
-
-    This setting also allows to use third-party linear algebra implementations such as `CUDA.jl` - these usually do not implement matrix exponent.
-
-    Note that this setting is experimental and enabling it can result in significant precision loss.
 
 ```julia
 a = Animation()
@@ -67,3 +74,14 @@ So, in the example before in the for-loop body `H` stands for `h(time)`, and `P`
 
     Note that if the hamiltonian matrix does not depend on time, you still need to define a function. 
     The reason is that it is nearly impossible to detect if it is a function name or a variable name at compile-time.
+
+## Third-party matrices
+
+To speed up calculations, one might use libraries such as [CUDA.jl](https://juliagpu.gitlab.io/CUDA.jl/) that provide an alternative linear algebra interface. 
+To use them in this macro, you should define these functions to work with the new matrix type:
+
+- All basic arithmetic operators: `+`, `-`, `*`
+- The complex adjoint operator `A'`
+- The matrix exponent `exp(A)`
+    - If it is not possible to implement this function (like in `CUDA.jl`), you can define the `one(A)` function which returns the identity matrix with the size same as `A`. 
+    Then you need to [configure the evolution operator function to enable the Taylor expansion formula](@ref "Matrix exponent optimization")

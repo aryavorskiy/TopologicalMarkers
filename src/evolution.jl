@@ -2,24 +2,52 @@ using LinearAlgebra
 using ProgressMeter
 
 SIMPLIFY_EVOLUTION = false
+TAYLOR_ORDER = 1
+THRESHOLD = nothing
+EVOL_CACHE = true
 
-function _simplify_evolution!(enable::Bool)
-    global SIMPLIFY_EVOLUTION = enable
+function _configure_exp!(simplify::Bool; kw...)
+    global SIMPLIFY_EVOLUTION = simplify
+    reset_cache()
+    ks = Set(keys(kw))
+    if :order in ks
+        global TAYLOR_ORDER = kw[:order]::Real
+        pop!(ks, :order)
+    end
+    
+    if :threshold in ks
+        global THRESHOLD = kw[:threshold]::Nullable{Real}
+        pop!(ks, :threshold)
+    end
+    
+    if :cache in ks
+        global EVOL_CACHE = kw[:cache]::Bool
+        pop!(ks, :cache)
+    end
+    
+    if !isempty(ks)
+        error("Unsupproted keywords: $(join(ks, ", "))")
+    end
 end
 
-function walz_exp(A::AbstractMatrix, k::Int)
-    B = I + A/2^k
-    for _ in 1:k
-        B *= B
+function taylor_exp(A::AbstractMatrix, k::Int)
+    B = one(A) + A
+    if k == 1
+        return B
+    end
+    M = copy(A)
+    for _ in 2:k
+        M *= A / k
+        B += M
     end
     return B
 end
 
-simple_exp(A::AbstractMatrix) = walz_exp(A, 2)
+simple_exp(A::AbstractMatrix) = taylor_exp(A, TAYLOR_ORDER)
 
-
-let store = Dict()
-    EVOL_STORED_SZ = 200
+let cached_h::Any = nothing
+    cached_t::Real = 0.1
+    cached_e::Any = nothing
 @doc raw"""
     evolution_operator(H, t)
 
@@ -32,13 +60,22 @@ $ \mathcal{U}(t) = e^{-\frac{1}{i\hbar} \hat{H} t} $
 - `t`: the evolution time
 """
     global function evolution_operator(H::AbstractMatrix{ComplexF64}, t::Real)
-        if (H, t) ∉ keys(store)
-            if length(store) > EVOL_STORED_SZ
-                store = Dict()
-            end
-            store[(H, t)] = SIMPLIFY_EVOLUTION ? simple_exp(im * H * t) : exp(im * H * t)
+        if t == cached_t && H == cached_h
+            return cached_e
         end
-        return store[(H, t)]
+        local evol = (SIMPLIFY_EVOLUTION && (THRESHOLD === nothing || t < THRESHOLD)) ? simple_exp((im * t) * H) : exp((im * t) * H)
+        if EVOL_CACHE
+            cached_h = H
+            cached_t = t
+            cached_e = evol
+        end
+        return evol
+    end
+
+    global function reset_cache()
+        cached_h = nothing
+        cached_t = 0.1
+        cached_e = nothing
     end
 end
 

@@ -30,8 +30,10 @@ macro symm(B, center=nothing)
         end
     else 
         return quote
-            local c = [(CURRENT_LATTICE_SIZE .- 1)...] / 2 .+ 1
-            @inline A(r::SVector{2, Float64})::SVector{3, Float64} = SA[-r[2] + c[2], r[1] - c[1], 0] * $(esc(B)) / 2
+            @inline A(r::SVector{2, Float64})::SVector{3, Float64} = (
+                local c = [(_try_get_lattice_size(nothing) .- 1)...] / 2 .+ 1; 
+                SA[-r[2] + c[2], r[1] - c[1], 0] * $(esc(B)) / 2
+            )
         end
     end
 end
@@ -52,8 +54,10 @@ macro flux(Φ, point=nothing)
         end
     else 
         return quote
-            local c = [(CURRENT_LATTICE_SIZE .- 1)...] / 2 .+ 1
-            @inline A(r::SVector{2, Float64})::SVector{3, Float64} = normalize(SA[-r[2] + c[2], r[1] - c[1], 0]) * $(esc(Φ))
+            @inline A(r::SVector{2, Float64})::SVector{3, Float64} = (
+                local c = [(_try_get_lattice_size(nothing) .- 1)...] / 2 .+ 1;
+                normalize(SA[-r[2] + c[2], r[1] - c[1], 0]) * $(esc(Φ))
+            )
         end
     end
 end
