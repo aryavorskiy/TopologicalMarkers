@@ -30,4 +30,4 @@ jobs:
           version: '1.6'
 
       - name: Run Coverage
-        run: julia -e 'using Pkg; cd(Pkg.dir("TopologicalMarkers")); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
+        run: julia -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate(); Pkg.add("Coverage"); using Coverage; Codecov.submit(Codecov.process_folder())'
