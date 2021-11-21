@@ -32,8 +32,6 @@ function _hamiltonian(m_repr::CoordinateRepr, pbc::Tuple{Bool, Bool})::Matrix{Co
     return H
 end
 
-FIELD_FUN = r::AbstractVector -> r
-
 @doc raw"""
     field!(H, A[, lattice_size]; intervals = 10)
 
@@ -49,16 +47,15 @@ This integral is calculated explicitly for every hopping, using the `A` function
 - `lattice_size`: the size of the lattice the hamiltonian is defined for. If not provided, this function will use the value for the hamiltonian matrix that was created last
 - `intervals`: the number of intervals to use when calculating the Peierls substitution phase factor
 """
-function field!(H::AbstractMatrix{<:Complex}, A::Function, lattice_size::SizeType = nothing; intervals::Int=10)
+function field!(H::Matrix{<:Complex}, A::Function, lattice_size::SizeType = nothing; intervals::Int=10)
     lattice_size = _try_get_lattice_size(lattice_size)     
-    global FIELD_FUN = A
     local function peierls(i, j)::ComplexF64
         phase::Float64 = 0
         r1 = index_to_pair(lattice_size, i)
         r2 = index_to_pair(lattice_size, j)
         dr = (r2 - r1) / intervals
         for i in 1:intervals
-            phase += dr' * FIELD_FUN(r1 + (i - 0.5) * dr)[1:2]
+            phase += dr' * A(r1 + (i - 0.5) * dr)[1:2]
         end
         return -2π * im * phase |> exp
     end
