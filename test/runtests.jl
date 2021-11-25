@@ -8,7 +8,7 @@ using Plots
 println("done.")
 
 const ENABLE_PROFILE = false
-const ENABLE_BENCHMARKS = false
+const ENABLE_BENCHMARKS = true
 
 if ENABLE_PROFILE
     include(joinpath("performance", "profile.jl"))
@@ -70,7 +70,7 @@ end
         h(t) = hamiltonian(ms, field=@landau(Bf * t / τ))
         a = Animation()
         println("Unitary evolution timing:")
-        TopologicalMarkers._configure_exp!(false)
+        TopologicalMarkers._configure_evolution!(false)
         @time @evolution [
             :ham => h => H,
             P0 => h => P
@@ -80,7 +80,7 @@ end
             frame(a)
         end
         println("Simplified unitary evolution timing:")
-        TopologicalMarkers._configure_exp!(true)
+        TopologicalMarkers._configure_evolution!(true)
         @time @evolution [
             :ham => h => H,
             P0 => h => P
@@ -89,7 +89,7 @@ end
             plot_auto("f" => P => cur * 10, clims=(0.98, 1.02))
             frame(a)
         end
-        TopologicalMarkers._configure_exp!(false)
+        TopologicalMarkers._configure_evolution!(false)
     end
 end
 include("operator_test.jl")

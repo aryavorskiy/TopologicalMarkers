@@ -6,7 +6,7 @@ B = 1e-6
 
 print("\nHamiltonian + field apply benchmark: ")
 b = @benchmark hamiltonian(CoordinateRepr(ones(11, 12)), field=@symm(B))
-show(stdout, "text/plain", b)
+display(b)
 
 ham = hamiltonian(CoordinateRepr(ones(11, 12)))
 ham_b = hamiltonian(CoordinateRepr(ones(11, 12)), field=@symm(B))
@@ -20,4 +20,4 @@ print("\nAuto plot timing: ")
 b = @benchmark plot_auto(streda => curr_b,
     "LCM" => 4π * im * P * X * P * Y * P,
     cutaway_view=(8, 8)) seconds=15
-show(stdout, "text/plain", b)
+display(b)

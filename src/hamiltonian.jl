@@ -47,7 +47,7 @@ This integral is calculated explicitly for every hopping, using the `A` function
 - `lattice_size`: the size of the lattice the hamiltonian is defined for. If not provided, this function will use the value for the hamiltonian matrix that was created last
 - `intervals`: the number of intervals to use when calculating the Peierls substitution phase factor
 """
-function field!(H::Matrix{<:Complex}, A::Function, lattice_size::SizeType = nothing; intervals::Int=10)
+function field!(H::Matrix{ComplexF64}, A::Function, lattice_size::SizeType = nothing; intervals::Int=10)
     lattice_size = _try_get_lattice_size(lattice_size)     
     local function peierls(i, j)::ComplexF64
         phase::Float64 = 0
@@ -122,7 +122,7 @@ Alternatively, pass a matrix and a representation specifier (see `CoordinateRepr
 - `domains`: A matrix with elements of arbitrary type, which maps sites to isolated domains. The hopping members between different domains are erased. There are no isolated domains by default
 - `field`: A function/lambda that takes two coordinates and returns the vector potential of the magnetic field. Used to calculate phase factors on hoppings. There is no magnetic field by default
 """
-function hamiltonian(m_repr::CoordinateRepr{Float64}; kw...)
+function hamiltonian(m_repr::CoordinateRepr{<:Real}; kw...)
     arg_keys = Set(keys(kw))
     
     function process_kw(fun::Function, k::Symbol, type::Type)

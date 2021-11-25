@@ -16,7 +16,7 @@ The matrix exponent is the heaviest linear algebra operation used in this projec
 To speed up calculations in some times, you can set up the matrix exponent to be calculated in a simpler way with this function:
 
 ```julia
-TopologicalMarkers._configure_exp!(simplify::Bool; <keyword arguments...>)
+TopologicalMarkers._configure_evolution!(simplify::Bool; <keyword arguments...>)
 ```
 
 If the `simplify` parameter is set to to `true`, the matrix exponent is evaluated using the Taylor series.
@@ -84,4 +84,4 @@ To use them in this macro, you should define these functions to work with the ne
 - The complex adjoint operator `A'`
 - The matrix exponent `exp(A)`
     - If it is not possible to implement this function (like in `CUDA.jl`), you can define the `one(A)` function which returns the identity matrix with the size same as `A`. 
-    Then you need to [configure the evolution operator function to enable the Taylor expansion formula](@ref "Matrix exponent optimization")
+    Then you need to [configure the evolution operator function to enable the Taylor expansion formula](@ref Matrix exponent optimization)

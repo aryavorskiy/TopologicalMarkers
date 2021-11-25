@@ -28,7 +28,7 @@ end
 P0 = filled_projector(h(0))
 P0b = filled_projector(hb(0))
 
-TopologicalMarkers._configure_exp!(true)
+TopologicalMarkers._configure_evolution!(true)
 
 @profilehtml @time @evolution [
     :ham => h => H,
