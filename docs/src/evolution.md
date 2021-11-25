@@ -23,9 +23,7 @@ If the `simplify` parameter is set to to `true`, the matrix exponent is evaluate
 You can set other parameters with following keywords:
 
 - `order`: The quantity of members of the Taylor expansion to be calculated
-- `threshold`: To avoid precision loss, if the `t` parameter is greater than `threshold`, the exponent will be evaluated using the `exp` function. Set to `nothing` to disable.
-- `cache`: This setting saves lots of time when performing evolution with constant hamiltonian. If the input parameters do not change, the evolution operator matrix will be stored
-which will help avoiding excessive matrix exponent calculations
+- `threshold`: To avoid precision loss, if the `t` parameter is greater than `threshold`, the exponent will be evaluated using the `exp` function. Set to `nothing` to always use Taylor expansion.
 
 ## The evolution macro
 
@@ -75,13 +73,18 @@ So, in the example before in the for-loop body `H` stands for `h(time)`, and `P`
     Note that if the hamiltonian matrix does not depend on time, you still need to define a function. 
     The reason is that it is nearly impossible to detect if it is a function name or a variable name at compile-time.
 
-## Third-party matrices
+## Performance
 
 To speed up calculations, one might use libraries such as [CUDA.jl](https://juliagpu.gitlab.io/CUDA.jl/) that provide an alternative linear algebra interface. 
 To use them in this macro, you should define these functions to work with the new matrix type:
 
-- All basic arithmetic operators: `+`, `-`, `*`
-- The complex adjoint operator `A'`
+- Equality operator: `==`
+- Basic arithmetic functions: `+`, `-`, `*`, `adjoint`
 - The matrix exponent `exp(A)`
     - If it is not possible to implement this function (like in `CUDA.jl`), you can define the `one(A)` function which returns the identity matrix with the size same as `A`. 
     Then you need to [configure the evolution operator function to enable the Taylor expansion formula](@ref Matrix exponent optimization)
+
+!!! Tip
+    The `hamiltonian` function is slow enough - this is the price we have to pay for its flexibility.
+    The most time-consuming tasks are allocating a new matrix and calling lambda-functions to evaluate the Peierls substitution.
+    Avoid calling it when evaluating the `h(t)` for the evolution operator when possible.

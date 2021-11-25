@@ -30,13 +30,13 @@ end
 plot_boundaries!(domain_mapping::AbstractMatrix; kw...) =
     plot_boundaries!(current(), domain_mapping; kw...)
 
-_unchain_arg(arg) = 
+_unchain_arg(arg) =
     arg isa Pair ? Any[_unchain_arg(arg.first)..., _unchain_arg(arg.second)...] : Any[arg]
 
-_obtain_repr(obj, lattice_size::SizeType)::CoordinateRepr = obj isa CoordinateRepr ? obj : heatmap_data(obj, lattice_size)
+_obtain_repr(obj, lattice_size::SizeType)::CoordinateRepr{Float64} =
+    obj isa CoordinateRepr ? obj : heatmap_data(obj, lattice_size)
 
 function _expand_arg(arg, lattice_size)
-    mat_type = Union{AbstractMatrix,CoordinateRepr}
     mat::Nullable{CoordinateRepr} = nothing
     tit::AbstractString = ""
     cur::Nullable{AbstractMatrix} = nothing
@@ -104,7 +104,7 @@ Plots complicated splitline data series (heatmap, boundaries, quiver) on a singl
 
 # Arguments
 - `pl`: a `Plots.Plot` object to visualize data on
-- `hmap`: data to be visualized on a heatmap. It can be a `CoordinateRepr` object (then it will be plotted directly) 
+- `hmap`: data to be visualized on a heatmap. It can be a `CoordinateRepr` object (then it will be plotted directly)
 or a linear operator matrix (then the `CoordinateRepr` will be generated automatically)
 - `domain_mapping`: a `CoordinateRepr` object that represents domain mapping. The boundaries between different domains will be drawn.
 - `currents`: a matrix containing currents between sites
@@ -119,7 +119,8 @@ This can be used to style the plot:
 
 `plot_figure!(..., hmapclims=(-3, 3), boundsstyle=:dot, :currentscolor=:green)`
 """
-function plot_figure!(pl::AbstractPlot; hmap=nothing, currents=nothing, domain_mapping=nothing, xlims::SizeType=nothing, ylims::SizeType=nothing,
+function plot_figure!(pl::AbstractPlot; hmap=nothing, currents=nothing, domain_mapping=nothing,
+    xlims::SizeType=nothing, ylims::SizeType=nothing,
     lattice_size::SizeType=nothing, kw...)
     lattice_size = _try_get_lattice_size(lattice_size)
     hmap_kw = _keys_by_prefix(kw, "hmap")
@@ -161,7 +162,7 @@ function plot_auto(args...; layout=nothing, plot_size=nothing, domain_mapping::N
     end
     append!(sites, cutaway_views)
     plots_total = length(args) + length(sites)
-    
+
     # Generate plot
     if plot_size === nothing
         plot_size = _optimal_size(plots_total)

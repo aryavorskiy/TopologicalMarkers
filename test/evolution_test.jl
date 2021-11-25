@@ -6,11 +6,9 @@ using LinearAlgebra
     ev_ex = exp(im * t * H)
     ev_li = I + im * t * H
     @test evolution_operator(H, t) == ev_ex
-    TopologicalMarkers._configure_evolution!(false, cache=false)
+    TopologicalMarkers._configure_evolution!(false)
     @test evolution_operator(H, t) == ev_ex
-    TopologicalMarkers._configure_evolution!(true, order=1, threshold=1, cache=false)
-    @test evolution_operator(H, t) == ev_li
-    TopologicalMarkers._configure_evolution!(true, cache=true)
+    TopologicalMarkers._configure_evolution!(true, order=1, threshold=1)
     @test evolution_operator(H, t) == ev_li
     TopologicalMarkers._configure_evolution!(false)
     @test evolution_operator(H, t) == ev_ex
