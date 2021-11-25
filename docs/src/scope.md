@@ -52,5 +52,6 @@ These functions may come in handy when you want to plot many heatmaps and electr
 ```@docs
 plot_boundaries!
 plot_figure!
+optimal_layout
 plot_auto
 ```

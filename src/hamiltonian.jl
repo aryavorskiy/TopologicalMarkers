@@ -45,10 +45,12 @@ This integral is calculated explicitly for every hopping, using the `A` function
 - `H`: the hamiltonian matrix
 - `A`: a function that takes a `Vector` representing a point and returns a `Vector` representing the vector potential in that point
 - `lattice_size`: the size of the lattice the hamiltonian is defined for. If not provided, this function will use the value for the hamiltonian matrix that was created last
+
+# Keyword arguments
 - `intervals`: the number of intervals to use when calculating the Peierls substitution phase factor
 """
 function field!(H::Matrix{ComplexF64}, A::Function, lattice_size::SizeType = nothing; intervals::Int=10)
-    lattice_size = _try_get_lattice_size(lattice_size)     
+    lattice_size = _try_get_lattice_size(lattice_size)
     local function peierls(i, j)::ComplexF64
         phase::Float64 = 0
         r1 = index_to_pair(lattice_size, i)
@@ -65,7 +67,7 @@ function field!(H::Matrix{ComplexF64}, A::Function, lattice_size::SizeType = not
         phase_mod = peierls(i1, i2)
         H[2 * i1 - 1:2 * i1, 2 * i2 - 1:2 * i2] *= phase_mod
         H[2 * i2 - 1:2 * i2, 2 * i1 - 1:2 * i1] *= phase_mod'
-        
+
         i2 = pair_to_index(lattice_size, i, j+1)
         phase_mod = peierls(i1, i2)
         H[2 * i1 - 1:2 * i1, 2 * i2 - 1:2 * i2] *= phase_mod
@@ -74,57 +76,62 @@ function field!(H::Matrix{ComplexF64}, A::Function, lattice_size::SizeType = not
 end
 
 """
-    domains!(H, domain_mapping[, repr_spec])
+    domains!(H, domain_mapping, repr_spec)
+    domains!(H, domain_mapping_repr)
 
 Divides the Chern insulator hamiltonian into several unconnected domains. The hoppings between these domains are erased.
 
 # Arguments
 - `H`: the hamiltonian matrix
-- `domain_mapping`: an `AbstractMatrix{Symbol}` or `CoordinateRepr{Symbol}`. Each site is mapped to a symbol, different symbols mean different domains
-- `repr_spec`: if `domain_mapping` is an `AbstractMatrix{Symbol}`, this argument is a representation specifier (see `CoordinateRepr` docs for more information)
+- `domain_mapping_repr`: an object of type `CoordinateRepr{Symbol}`. Each site is mapped to a symbol, different symbols mean different domains
+- `domain_mapping`: domain mapping matrix. Each site is mapped to a symbol, different symbols mean different domains
+- `repr_spec`: representation specifier for the `domain_mapping` (see `CoordinateRepr` docs for more information)
 """
-function domains!(H::Matrix{ComplexF64}, domain_mapping::CoordinateRepr{Symbol})
-    lattice_size = size(domain_mapping)
+function domains!(H::Matrix{ComplexF64}, domain_mapping_repr::CoordinateRepr{Symbol})
+    lattice_size = size(domain_mapping_repr)
     E = zeros(2, 2)
     for i in 1:lattice_size[1]
         for j in 1:lattice_size[2]
             i1 = pair_to_index(lattice_size, i, j)
             i2 = pair_to_index(lattice_size, i+1, j)
-            if domain_mapping[i1] != domain_mapping[i2]
+            if domain_mapping_repr[i1] != domain_mapping_repr[i2]
                 _set_hopping!(H, i1, i2, E)
             end
             i2 = pair_to_index(lattice_size, i, j+1)
-            if domain_mapping[i1] != domain_mapping[i2]
+            if domain_mapping_repr[i1] != domain_mapping_repr[i2]
                 _set_hopping!(H, i1, i2, E)
             end
         end
     end
 end
 
-domains!(H::Matrix{ComplexF64}, domain_mapping::AbstractMatrix{Symbol}, repr_spec::Symbol) = 
+domains!(H::Matrix{ComplexF64}, domain_mapping::AbstractMatrix{Symbol}, repr_spec::Symbol) =
     domains!(H, CoordinateRepr(domain_mapping, repr_spec))
 
 @doc raw"""
-    hamiltonian{T}((m_repr | m_lattice, repr_spec); <keyword arguments>)
+    hamiltonian{T}(m_repr; <keyword arguments>)
+    hamiltonian{T}(m_lattice, repr_spec; <keyword arguments>)
 
 Generates a Hamiltonian operator for a Chern insulator using the following formula
 
-$\hat{H} = 
-\sum_i m_i c^\dagger_i \sigma_z c_i + 
-\sum_{x-links} c^\dagger_i \frac{\sigma_z - i \sigma_x}{2} c_j + 
-\sum_{y-links} c^\dagger_i \frac{\sigma_z - i \sigma_y}{2} c_j + 
+$\hat{H} =
+\sum_i m_i c^\dagger_i \sigma_z c_i +
+\sum_{x-links} c^\dagger_i \frac{\sigma_z - i \sigma_x}{2} c_j +
+\sum_{y-links} c^\dagger_i \frac{\sigma_z - i \sigma_y}{2} c_j +
 h. c.$
 
 # Arguments
 - `m_repr`: The value of `m` on different sites, in `CoordinateRepr` format
 Alternatively, pass a matrix and a representation specifier (see `CoordinateRepr` for more information)
+
+# Keyword arguments
 - `pbc`: Periodic boundary conditions. A `Tuple{Bool, Bool}`, each element sets boundary conditions for the horizontal and vertical edge respectively. Default is `(false, false)`
 - `domains`: A matrix with elements of arbitrary type, which maps sites to isolated domains. The hopping members between different domains are erased. There are no isolated domains by default
 - `field`: A function/lambda that takes two coordinates and returns the vector potential of the magnetic field. Used to calculate phase factors on hoppings. There is no magnetic field by default
 """
 function hamiltonian(m_repr::CoordinateRepr{<:Real}; kw...)
     arg_keys = Set(keys(kw))
-    
+
     function process_kw(fun::Function, k::Symbol, type::Type)
         if k in arg_keys
             @assert kw[k] isa type "Unsupproted type of keyword \"$k\": expected '$type', got '$(typeof(kw[k]))'"
@@ -149,5 +156,5 @@ function hamiltonian(m_repr::CoordinateRepr{<:Real}; kw...)
     return H
 end
 
-hamiltonian(m_lattice::AbstractMatrix{<:Real}, repr_spec::Symbol; kw...) = 
+hamiltonian(m_lattice::AbstractMatrix{<:Real}, repr_spec::Symbol; kw...) =
     hamiltonian(CoordinateRepr(m_lattice, repr_spec); kw...)

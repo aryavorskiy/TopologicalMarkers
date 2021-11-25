@@ -11,7 +11,7 @@ end
 """
     CoordinateRepr{T}
 
-A wrapper class for matrices to be conveniently plotted.
+A wrapper struct for matrices to be conveniently plotted.
 
 # Arguments
 - `lattice`: A matrix representing some quantity defined on the lattice (e. g. the LCM)
@@ -46,13 +46,15 @@ setindex!(coord::CoordinateRepr, args...) = setindex!(coord._inner_mat, args...)
 @doc raw"""
     heatmap_data(op[, lattice_size])
 
-Generates a CoordinateRepr for values like $\langle r | \hat{\mathcal{O}} | r \rangle$.
+Generates a CoordinateRepr for coordinate representation traces:
+$\langle r | \hat{\mathcal{O}} | r \rangle$.
 
 # Arguments
 - `op`: the operator to find values for
 - `lattice_size`: the size of the lattice
 """
-function heatmap_data(op::AbstractMatrix{Complex{T}}, lattice_size::SizeType)::CoordinateRepr{T} where T <: Real
+function heatmap_data(op::AbstractMatrix{Complex{T}},
+    lattice_size::SizeType)::CoordinateRepr{T} where T <: Real
     lattice_size = _try_get_lattice_size(lattice_size)
     markers = zeros(T, lattice_size)
     for i in 1:prod(lattice_size)
@@ -85,15 +87,18 @@ The output is a tuple of two vectors with equal length: one contains arrow origi
 # Arguments
 - `currents_mat`: a matrix with currents
 - `lattice_size`: the size of the lattice
+
+# Keyword arguments
 - `threshold`: minimum value of the current to be put to output. Default is `0.1`
 - `dist_threshold`: maximum distance between sites for which the current will be evaluated. Infinite by default
 - `xlims` and `ylims`: limit the area in which the currents will be evaluated. Infinite by default
 """
-function quiver_data(currents_mat::AbstractMatrix{<:Real}, lattice_size::SizeType=nothing; threshold::Real=0.1, dist_threshold::Real=Inf,
-    xlims::NTuple{2, <:Real}=(-Inf, Inf), ylims::NTuple{2, <:Real}=(-Inf, Inf))
+function quiver_data(currents_mat::AbstractMatrix{<:Real}, lattice_size::SizeType=nothing;
+    threshold::Real=0.1, dist_threshold::Real=Inf, xlims::NTuple{2, <:Real}=(-Inf, Inf),
+    ylims::NTuple{2, <:Real}=(-Inf, Inf))
     lattice_size = _try_get_lattice_size(lattice_size)
-    ps = Vector{NTuple{2,<:Int}}()
-    qs = Vector{NTuple{2,<:Real}}()
+    ps = NTuple{2,<:Int}[]
+    qs = NTuple{2,<:Real}[]
     for i in 1:prod(lattice_size), j in 1:(i - 1)
         if abs(currents_mat[i, j]) < threshold || dist(lattice_size, i, j) > dist_threshold
             continue

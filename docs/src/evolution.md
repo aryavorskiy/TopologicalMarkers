@@ -76,7 +76,7 @@ So, in the example before in the for-loop body `H` stands for `h(time)`, and `P`
 ## Performance
 
 To speed up calculations, one might use libraries such as [CUDA.jl](https://juliagpu.gitlab.io/CUDA.jl/) that provide an alternative linear algebra interface. 
-To use them in this macro, you should define these functions to work with the new matrix type:
+To make them compatible with the `@evolution` macro, you should define these operatots and functions for the new matrix type:
 
 - Equality operator: `==`
 - Basic arithmetic functions: `+`, `-`, `*`, `adjoint`

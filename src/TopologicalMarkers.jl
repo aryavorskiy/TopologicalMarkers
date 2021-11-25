@@ -1,10 +1,5 @@
 module TopologicalMarkers
 
-# TODO finish bugfixes and tests, write docs
-# TODO profile and optimize plot_auto
-# TODO new features for plots: allow title omitting
-# TODO new attrs: axis labels,
-
 export hamiltonian, field!, domains!, # hamiltonian.jl
     filled_projector, coord_operators, currents, # operators.jl
     @evolution, evolution_operator, # evolution.jl
