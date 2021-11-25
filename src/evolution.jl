@@ -4,29 +4,22 @@ using ProgressMeter
 SIMPLIFY_EVOLUTION = false
 TAYLOR_ORDER = 1
 THRESHOLD = nothing
-EVOL_CACHE = true
 
-function _configure_exp!(simplify::Bool; kw...)
+function _configure_evolution!(simplify::Bool; kw...)
     global SIMPLIFY_EVOLUTION = simplify
-    reset_cache()
     ks = Set(keys(kw))
     if :order in ks
         global TAYLOR_ORDER = kw[:order]::Real
         pop!(ks, :order)
     end
-    
+
     if :threshold in ks
         global THRESHOLD = kw[:threshold]::Nullable{Real}
         pop!(ks, :threshold)
     end
-    
-    if :cache in ks
-        global EVOL_CACHE = kw[:cache]::Bool
-        pop!(ks, :cache)
-    end
-    
+
     if !isempty(ks)
-        error("Unsupproted keywords: $(join(ks, ", "))")
+        error("Unsupproted keyword(s): $(join(ks, ", "))")
     end
 end
 
@@ -45,9 +38,6 @@ end
 
 simple_exp(A::AbstractMatrix) = taylor_exp(A, TAYLOR_ORDER)
 
-let cached_h::Any = nothing
-    cached_t::Real = 0.1
-    cached_e::Any = nothing
 @doc raw"""
     evolution_operator(H, t)
 
@@ -59,25 +49,9 @@ $ \mathcal{U}(t) = e^{-\frac{1}{i\hbar} \hat{H} t} $
 - `H`: the hamiltonian matrix
 - `t`: the evolution time
 """
-    global function evolution_operator(H::AbstractMatrix{ComplexF64}, t::Real)
-        if t == cached_t && H == cached_h
-            return cached_e
-        end
-        local evol = (SIMPLIFY_EVOLUTION && (THRESHOLD === nothing || t < THRESHOLD)) ? simple_exp((im * t) * H) : exp((im * t) * H)
-        if EVOL_CACHE
-            cached_h = H
-            cached_t = t
-            cached_e = evol
-        end
-        return evol
-    end
-
-    global function reset_cache()
-        cached_h = nothing
-        cached_t = 0.1
-        cached_e = nothing
-    end
-end
+evolution_operator(H::AbstractMatrix, t::Real) =
+    (SIMPLIFY_EVOLUTION && (THRESHOLD === nothing || t < THRESHOLD)) ?
+    simple_exp((im * t) * H) : exp((im * t) * H)
 
 function _expand(chain::Expr)
     @assert chain.head == :call
@@ -101,15 +75,32 @@ macro evolution(rules, loop)
     end
     loop_iter, loop_body = loop.args
     loop_var, loop_range = loop_iter.args
-    
+
     main_block = quote end
     p_evolvers = quote end
     h_evaluated = quote end
-    
+
     if typeof(rules) != Expr || rules.head ∉ (:vect, :vcat, :hcat, :braces, :bracescat)
         error("Evolution specifier should be iterable, not '$(loop.head)'")
     end
-    
+
+    hamiltonian_functions = Set()
+    for statement in rules.args
+        if typeof(statement) == LineNumberNode
+            continue
+        elseif typeof(statement) == Expr
+            push!(hamiltonian_functions, _expand(statement)[2])
+        end
+    end
+    for h in hamiltonian_functions
+        h_eval = Symbol(string(h) * "_eval")
+        h_eval_new = Symbol(string(h) * "_eval_new")
+        local h_init = :(local $(esc(h_eval)) = nothing)
+        local h_eval = :(local $(esc(h_eval_new)) = $(esc(h))($(esc(loop_var))))
+        push!(main_block.args, h_init)
+        push!(h_evaluated.args, h_eval)
+    end
+
     for statement in rules.args
         if typeof(statement) == LineNumberNode
             continue
@@ -117,32 +108,42 @@ macro evolution(rules, loop)
             local a, b, c = _expand(statement)
             if a == :(:ham)
                 local ham_fun, ham_var = b, c
-                local h_init = :(local $(esc(ham_var)) = zero($(esc(ham_fun))(0)))
-                local h_eval = :($(esc(ham_var)) = $(esc(ham_fun))($(esc(loop_var))))
-                push!(main_block.args, h_init)
+                h_eval_new = Symbol(string(ham_fun) * "_eval_new")
+                local h_eval = :($(esc(ham_var)) = $(esc(h_eval_new)))
                 push!(h_evaluated.args, h_eval)
             else
                 local p_initial, ham_fun, p_target = a, b, c
-                local p_init = :(local $(esc(p_target)) = copy($(esc(p_initial))))
-                local p_evol = quote
-                    local ev = evolution_operator($(esc(ham_fun))($(esc(loop_var))), dt)
-                    $(esc(p_target)) = ev * $(esc(p_target)) * ev'
+                h_eval = Symbol(string(ham_fun) * "_eval")
+                h_eval_new = Symbol(string(ham_fun) * "_eval_new")
+                p_target_ev = Symbol(string(p_target) * "_evolutor")
+                local p_init = quote
+                    local $(esc(p_target)) = copy($(esc(p_initial)));
+                    local $(esc(p_target_ev)) = nothing
                 end
-                push!(main_block.args, p_init)
+                local p_evol = quote
+                    if $(esc(h_eval_new)) != $(esc(h_eval))
+                        $(esc(p_target_ev)) = evolution_operator($(esc(h_eval_new)), dt)
+                    end
+                    $(esc(h_eval)) != $(esc(h_eval_new))
+                    $(esc(p_target)) = $(esc(p_target_ev)) * $(esc(p_target)) * $(esc(p_target_ev))'
+                end
+                append!(main_block.args, p_init.args)
                 append!(p_evolvers.args, p_evol.args)
             end
         end
     end
 
-    push!(h_evaluated.args, :($(esc(loop_body))))
+    new_loop_body = quote end
+    append!(new_loop_body.args, h_evaluated.args)
+    append!(new_loop_body.args, p_evolvers.args)
+    push!(new_loop_body.args, :($(esc(loop_body))))
     local new_loop = quote
         local t_inner = 0.
         local len = length($(esc(loop_range)))
         p = Progress(len, dt=0.5, barglyphs = BarGlyphs("[=> ]"), showspeed = true)
         for $(esc(loop_var)) in $(esc(loop_range))
             local dt = $(esc(loop_var)) - t_inner
-            $p_evolvers
-            $h_evaluated
+            $new_loop_body
             ProgressMeter.next!(p)
             t_inner = $(esc(loop_var))
         end

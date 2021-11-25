@@ -6,14 +6,14 @@ using StaticArrays
     q = (6., 5)
     x = SA[2., 3]
     y = SA[6., 2]
-    
+
     @testset "Landau gauge" begin
         A1 = @landau 1
         A2 = @landau B
         @test A1(x) == A2(x)
         @test A1(y) == A2(y)
     end
-    
+
     @testset "Symmetric gauge" begin
         A1 = @symm 1
         A2 = @symm B

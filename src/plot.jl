@@ -30,13 +30,13 @@ end
 plot_boundaries!(domain_mapping::AbstractMatrix; kw...) =
     plot_boundaries!(current(), domain_mapping; kw...)
 
-_unchain_arg(arg) = 
+_unchain_arg(arg) =
     arg isa Pair ? Any[_unchain_arg(arg.first)..., _unchain_arg(arg.second)...] : Any[arg]
 
-_obtain_repr(obj, lattice_size::SizeType)::CoordinateRepr = obj isa CoordinateRepr ? obj : heatmap_data(obj, lattice_size)
+_obtain_repr(obj, lattice_size::SizeType)::CoordinateRepr{Float64} =
+    obj isa CoordinateRepr ? obj : heatmap_data(obj, lattice_size)
 
 function _expand_arg(arg, lattice_size)
-    mat_type = Union{AbstractMatrix,CoordinateRepr}
     mat::Nullable{CoordinateRepr} = nothing
     tit::AbstractString = ""
     cur::Nullable{AbstractMatrix} = nothing
@@ -60,28 +60,40 @@ end
 
 # Optimal layout
 
-function _optimal_grid_size(plots_total::Int, plot_aspect_ratio::NTuple{2,Int}, subplot_aspect_ratio::NTuple{2,Int})::NTuple{2, Int}
-    rows = round(Int, √(plots_total * plot_aspect_ratio[2] / plot_aspect_ratio[1] * subplot_aspect_ratio[1] / subplot_aspect_ratio[2]))
-    rows = min(max(rows, 1), plots_total)
-    cols = ceil(Int64, plots_total / rows)
+function _optimal_grid_size(figures_total::Int, plot_aspect_ratio::NTuple{2,Int}, subplot_aspect_ratio::NTuple{2,Int})::NTuple{2, Int}
+    rows = round(Int, √(figures_total * plot_aspect_ratio[2] / plot_aspect_ratio[1] * subplot_aspect_ratio[1] / subplot_aspect_ratio[2]))
+    rows = min(max(rows, 1), figures_total)
+    cols = ceil(Int64, figures_total / rows)
 return rows, cols
 end
 
-function _optimal_size(plots_total::Int; subplot_size::NTuple{2,Int}=(450, 350))::NTuple{2, Int}
-    rows, cols = _optimal_grid_size(plots_total, subplot_size, subplot_size)
+function _optimal_size(figures_total::Int; subplot_size::NTuple{2,Int}=(450, 350))::NTuple{2, Int}
+    rows, cols = _optimal_grid_size(figures_total, subplot_size, subplot_size)
     return subplot_size[1] * cols, subplot_size[2] * rows
 end
 
+"""
+    optimal_layout(figures_total; <keyword arguments>)
 
-function optimal_layout(plots_total::Int; plot_size::SizeType=nothing, subplot_size::NTuple{2,Int}=(450, 350))
-    rows, cols = _optimal_grid_size(plots_total, plot_size === nothing ? subplot_size : plot_size, subplot_size)
-    col_remainder = 1 - (rows * cols - plots_total) / cols
+Generates optimal layout for multiple figures in a plot.
 
-        if rows * cols == plots_total
+# Arguments
+- `figures_total`: the number of figures to place on the plot
+
+# Keyword arguments
+- `plot_aspect_ratio`: The aspect ratio of the plot. 1:1 bu default
+- `figure_aspect_ratio`: the aspect ratio of one figure of the plot. 7:5 by default
+"""
+function optimal_layout(figures_total::Int; plot_aspect_ratio::SizeType=nothing,
+    figure_aspect_ratio::NTuple{2,Int}=(450, 350))
+    rows, cols = _optimal_grid_size(figures_total, plot_aspect_ratio === nothing ?
+    figure_aspect_ratio : plot_aspect_ratio, figure_aspect_ratio)
+    col_remainder = 1 - (rows * cols - figures_total) / cols
+    if rows * cols == figures_total
         return grid(rows, cols)
     else
         return @layout [grid(rows - 1, cols, height=(rows - 1) / rows * pct);
-        _ grid(1, plots_total - cols * (rows - 1), width=col_remainder * pct) _]
+        _ grid(1, figures_total - cols * (rows - 1), width=col_remainder * pct) _]
     end
 end
 
@@ -104,22 +116,27 @@ Plots complicated splitline data series (heatmap, boundaries, quiver) on a singl
 
 # Arguments
 - `pl`: a `Plots.Plot` object to visualize data on
-- `hmap`: data to be visualized on a heatmap. It can be a `CoordinateRepr` object (then it will be plotted directly) 
+
+# Keyword arguments
+- `hmap`: data to be visualized on a heatmap. It can be a `CoordinateRepr` object (then it will be plotted directly)
 or a linear operator matrix (then the `CoordinateRepr` will be generated automatically)
 - `domain_mapping`: a `CoordinateRepr` object that represents domain mapping. The boundaries between different domains will be drawn.
 - `currents`: a matrix containing currents between sites
 - `xlims` and `ylims`: objects of type `Tuple{Int, Int}` that define the limits of the x- and y- axes respectively
 
-All keyword arguments with different prefixes are passed to the `plot!` function:
+All other keyword arguments with the following prefixes are passed to the `plot!` function:
 - `hmap` for the heatmap
 - `bounds` for the boundaries
 - `currents` for the quiver
 
-This can be used to style the plot:
+This can be used to style the plot. For example, this line will result in the domain
+boundaries being drawn in dot style, the limits of the heatmap will be set from -3 to 3,
+and the arrows depicting the currents will be blue:
 
 `plot_figure!(..., hmapclims=(-3, 3), boundsstyle=:dot, :currentscolor=:green)`
 """
-function plot_figure!(pl::AbstractPlot; hmap=nothing, currents=nothing, domain_mapping=nothing, xlims::SizeType=nothing, ylims::SizeType=nothing,
+function plot_figure!(pl::AbstractPlot; hmap=nothing, currents=nothing, domain_mapping=nothing,
+    xlims::SizeType=nothing, ylims::SizeType=nothing,
     lattice_size::SizeType=nothing, kw...)
     lattice_size = _try_get_lattice_size(lattice_size)
     hmap_kw = _keys_by_prefix(kw, "hmap")
@@ -151,26 +168,46 @@ The subplots are automatically arranged into an optimal layout.
 # Arguments
 
 Each argument can be either a `CoordinateRepr` object or a chain of pairs.
+
+# Keyword arguments
+
+- `layout`: a `Plots.Layout` object to use. If not specified, an optimal layout will be
+generated depending on the plot size.
+- `plot_size`: actual size of the plot. If not specified, then the `layout` parameter will
+be ignored and the size will be optimal for the layout
+- `title`: the title of the graph
+- `cutaway_view`: `Tuple` that indicates which cutaway view should be
+drawn on a separate figure
+- `cutaway_views`: Same as previous, but many of them
+
+All other keyword arguments with the following prefixes are passed to the `plot!` function:
+- `hmap` for the heatmap
+- `bounds` for the boundaries
+- `currents` for the quiver
+- `cutaway` for the cutaway figure
+- `splitline` for the line on all figures that shows the plane of the cutaway views
 """
-function plot_auto(args...; layout=nothing, plot_size=nothing, domain_mapping::Nullable{CoordinateRepr}=nothing, title="",
-     cutaway_view=nothing, cutaway_views::AbstractVector{NTuple{2,Int}}=Vector{NTuple{2,Int}}(), lattice_size=nothing, kw...)
+function plot_auto(args...; layout=nothing, plot_size=nothing,
+    domain_mapping::Nullable{CoordinateRepr}=nothing, title="", cutaway_view=nothing,
+    cutaway_views::AbstractVector{NTuple{2,Int}}=NTuple{2,Int}[], lattice_size=nothing,
+    kw...)
     lattice_size = _try_get_lattice_size(lattice_size)
     sites = []
     if cutaway_view !== nothing
         push!(sites, cutaway_view)
     end
     append!(sites, cutaway_views)
-    plots_total = length(args) + length(sites)
-    
+    figures_total = length(args) + length(sites)
+
     # Generate plot
     if plot_size === nothing
-        plot_size = _optimal_size(plots_total)
+        plot_size = _optimal_size(figures_total)
         if layout !== nothing
             @warn "Plot size was not specified, fallback to optimal plot layout. Specify plot size to avoid this"
         end
-        layout = optimal_layout(plots_total)
+        layout = optimal_layout(figures_total)
     elseif layout === nothing
-        layout = optimal_layout(plots_total; plot_size=plot_size)
+        layout = optimal_layout(figures_total; plot_size=plot_size)
     end
     p = plot(layout=layout, size=plot_size)
 

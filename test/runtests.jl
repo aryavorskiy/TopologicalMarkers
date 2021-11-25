@@ -12,9 +12,11 @@ const ENABLE_BENCHMARKS = false
 
 if ENABLE_PROFILE
     include(joinpath("performance", "profile.jl"))
+    exit()
 end
 if ENABLE_BENCHMARKS
     include(joinpath("performance", "benchmark.jl"))
+    exit()
 end
 
 # Macro tests
@@ -38,7 +40,8 @@ end
 
         pl = plot()
         currs = @currents @J_treq ham_b P X Y
-        plot_figure!(pl, hmap=4π * im * P * X * P * Y * P, currents=currs, xlims=(6,10), ylims=(8, 12))
+        plot_figure!(pl, hmap=4π * im * P * X * P * Y * P, currents=currs, xlims=(6,10),
+            ylims=(8, 12), domains = CoordinateRepr(ms))
     end
 
     @testset "Density currents" begin
@@ -55,11 +58,11 @@ end
             P0 => h => P
         ] for t in 0:1:τ
             cur = currents(H, P)
-            plot_auto("f" => P => cur * 10, clims=(0.98, 1.02))
+            plot_auto("f" => P => cur * 10, hmapclims=(0.98, 1.02))
         end
     end
 
-    @testset "Adiabatic field on, simplified" begin
+    @testset "Adiabatic field on + simplified" begin
         time_domain = 0:0.1:30
         ms = CoordinateRepr(ones(15, 15))
         Bf = 0.01
@@ -70,26 +73,26 @@ end
         h(t) = hamiltonian(ms, field=@landau(Bf * t / τ))
         a = Animation()
         println("Unitary evolution timing:")
-        TopologicalMarkers._configure_exp!(false)
+        TopologicalMarkers._configure_evolution!(false)
         @time @evolution [
             :ham => h => H,
             P0 => h => P
         ] for t in 0:1:τ
             cur = currents(H, P)
-            plot_auto("f" => P => cur * 10, clims=(0.98, 1.02))
+            plot_auto("f" => P => cur * 10, hmapclims=(0.98, 1.02))
             frame(a)
         end
         println("Simplified unitary evolution timing:")
-        TopologicalMarkers._configure_exp!(true)
+        TopologicalMarkers._configure_evolution!(true)
         @time @evolution [
             :ham => h => H,
             P0 => h => P
         ] for t in 0:1:τ
             cur = currents(H, P)
-            plot_auto("f" => P => cur * 10, clims=(0.98, 1.02))
+            plot_auto("f" => P => cur * 10, hmapclims=(0.98, 1.02))
             frame(a)
         end
-        TopologicalMarkers._configure_exp!(false)
+        TopologicalMarkers._configure_evolution!(false)
     end
 end
 include("operator_test.jl")

@@ -6,23 +6,21 @@ using LinearAlgebra
     ev_ex = exp(im * t * H)
     ev_li = I + im * t * H
     @test evolution_operator(H, t) == ev_ex
-    TopologicalMarkers._configure_exp!(false, cache=false)
+    TopologicalMarkers._configure_evolution!(false)
     @test evolution_operator(H, t) == ev_ex
-    TopologicalMarkers._configure_exp!(true, order=1, threshold=1, cache=false)
+    TopologicalMarkers._configure_evolution!(true, order=1, threshold=1)
     @test evolution_operator(H, t) == ev_li
-    TopologicalMarkers._configure_exp!(true, cache=true)
-    @test evolution_operator(H, t) == ev_li
-    TopologicalMarkers._configure_exp!(false)
+    TopologicalMarkers._configure_evolution!(false)
     @test evolution_operator(H, t) == ev_ex
-    TopologicalMarkers._configure_exp!(true, threshold=1e-4)
+    TopologicalMarkers._configure_evolution!(true, threshold=1e-4)
     @test evolution_operator(H, 1e-5) == I + im * 1e-5 * H
     @test evolution_operator(H, 1e-3) == exp(im * 1e-3 * H)
-    TopologicalMarkers._configure_exp!(true, threshold=nothing)
+    TopologicalMarkers._configure_evolution!(true, threshold=nothing)
     @test evolution_operator(H, 1e-5) == I + im * 1e-5 * H
     @test evolution_operator(H, 1e-3) == I + im * 1e-3 * H
-    TopologicalMarkers._configure_exp!(true, order = 2)
+    TopologicalMarkers._configure_evolution!(true, order = 2)
     @test evolution_operator(H, 1e-5) == TopologicalMarkers.taylor_exp(im * 1e-5 * H, 2)
     @test evolution_operator(H, 1e-3) == TopologicalMarkers.taylor_exp(im * 1e-3 * H, 2)
-    TopologicalMarkers._configure_exp!(true, threshold=1e-5)
+    TopologicalMarkers._configure_evolution!(true, threshold=1e-5)
     @test evolution_operator(H, 1e-3) == exp(im * 1e-3 * H)
 end

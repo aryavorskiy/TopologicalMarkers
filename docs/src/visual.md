@@ -70,13 +70,13 @@ quiver(ps, quiver = qs, color=:blue)
 
 These functions may come in handy if you want to plot multiple figures simultaneously and do not want to set the layout up manually.
 
-The [`plot_figure!`](@ref) function can be used to plot a figure. It has one argument - the `Plot` object to draw on. 
-You can draw a heatmap, a quiver plot and also bounding lines between domains if you need to. What you have to do is pass a keyword argument:
+The [`plot_figure!`](@ref) function can be used to plot one figure. It has one argument - the `Plot` object to draw on. 
+You can draw a heatmap, a quiver plot or bounding lines between domains if you need to. What you have to do is pass a keyword argument:
 - `hmap` for heatmap
 - `currents` for quiver
 - `domain_mapping` for boundaries
 
-The `xlims` and `ylims` keywords have meaning traditional for plots. 
+The `xlims` and `ylims` keywords have meaning traditional for plots.
 All other keyword arguments are automatically parsed and then passed to the plot function at different stages depending on the prefix of the key.
 - `hmap` is passed to heatmap
 - `currents` is passed to quiver

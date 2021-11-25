@@ -210,7 +210,7 @@ These currents can be evaluated as follows:
 
 ```@example with_pkg
 τ = 100
-time_domain = 0:0.1:0.4τ
+time_domain = 0:0.5:2τ
 
 TopologicalMarkers._set_lattice_size!(22, 21)
 X, Y = coord_operators()

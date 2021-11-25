@@ -1,5 +1,8 @@
 # TopologicalMarkers
 
+[![](https://img.shields.io/badge/docs-latest-blue.svg)](https://aryavorskiy.github.io/TopologicalMarkers/)
+[![codecov](https://codecov.io/gh/aryavorskiy/TopologicalMarkers/branch/master/graph/badge.svg?token=NQZVV7CUUQ)](https://codecov.io/gh/aryavorskiy/TopologicalMarkers)
+
 This package contains software used in the article <РЫБА>. 
 
 ## Installation
