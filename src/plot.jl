@@ -207,7 +207,7 @@ function plot_auto(args...; layout=nothing, plot_size=nothing,
         end
         layout = optimal_layout(figures_total)
     elseif layout === nothing
-        layout = optimal_layout(figures_total; plot_size=plot_size)
+        layout = optimal_layout(figures_total; plot_aspect_ratio=plot_size)
     end
     p = plot(layout=layout, size=plot_size)
 
