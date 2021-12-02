@@ -95,6 +95,8 @@ end
         TopologicalMarkers._configure_evolution!(false)
     end
 end
+
+include("coord_mapping_test.jl")
 include("operator_test.jl")
 include("field_test.jl")
 include("evolution_test.jl")

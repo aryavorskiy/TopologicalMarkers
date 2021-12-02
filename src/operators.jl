@@ -13,7 +13,7 @@ Returns a tuple of coordinate operators (i. e. $\hat{X}$ and $\hat{Y}$).
 """
 function coord_operators(lattice_size::SizeType;
     symmetric::Bool=true)::NTuple{2,Matrix{Float64}}
-    lattice_size = _try_get_lattice_size(lattice_size)
+    lattice_size = _current_lattice_size(lattice_size)
     len = prod(lattice_size)
     operators = []
     for axis in 1:2
@@ -62,7 +62,7 @@ Returns a skew-symmetric matrix of electric currents between sites.
 """
 function currents(H::AbstractMatrix{Complex{T}}, P::AbstractMatrix{Complex{T}},
     lattice_size::SizeType=nothing) where T <: Real
-    lattice_size = _try_get_lattice_size(lattice_size)
+    lattice_size = _current_lattice_size(lattice_size)
     currents_mat = zeros(prod(lattice_size), prod(lattice_size))
     for i in 1:prod(lattice_size), j in 1:(i - 1)
         if dist(lattice_size, i, j) == 1

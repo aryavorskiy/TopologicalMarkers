@@ -217,10 +217,8 @@ X, Y = coord_operators()
 
 m0 = fill(-3, 22, 21)
 m0[6:12, 7:13] .= -1
-
 m1 = fill(-3, 22, 21)
 m1[7:13, 7:13] .= -1
-
 h(t) = hamiltonian(m0 + (m1 - m0) * min(1, t/τ), :c)
 
 B = 1e-6
@@ -242,7 +240,8 @@ a = Animation()
 ] for t in time_domain
     cur = currents(H, P)
     curb = currents(Hb, Pb)
-    plot_auto("Streda currents" => (Pb - P) / B => (curb - cur) / B, plot_title = "Time: $t")
+    plot_auto("Streda currents" => (Pb - P) / B => (curb - cur) / B, 
+        hmapclims = (-3, 3), title = "Time: $t")
     frame(a)
 end
 

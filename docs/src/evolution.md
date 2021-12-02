@@ -10,7 +10,7 @@ $\mathcal{U}(t) = T\left\{ e^{\frac{1}{i\hbar} \int_{t_0}^t \hat{H}(\tau) d\tau}
 The [`evolution_operator`](@ref) function calculates the evolution operator for a time-independent hamiltonian. 
 Its input parameters are the hamiltonian matrix `H` and the time interval `t`.
 
-## Matrix exponent optimization
+## [Matrix exponent optimization](@id mexp_opt)
 
 The matrix exponent is the heaviest linear algebra operation used in this project. 
 To speed up calculations in some times, you can set up the matrix exponent to be calculated in a simpler way with this function:
@@ -36,7 +36,7 @@ h(t) = hamiltonian(ms, field = @symm(Bf * min(t, τ) / τ))
 
 Here `h(t)` describes the magnetic field being adiabatically turned on.
 
-Take a look at the example 2 from the [Home/Examples](index.md#Examples) section.
+Take a look at [this example](@ref example_flux) from the Home/Examples section.
 The `@evolution` macro creates a block where the hamiltonian and density matrices are evaluated for the given time interval. 
 It takes two arguments - a list/vector with evolution specifiers and a for-loop that iterates over the time interval:
 
@@ -82,9 +82,10 @@ To make them compatible with the `@evolution` macro, you should define these ope
 - Basic arithmetic functions: `+`, `-`, `*`, `adjoint`
 - The matrix exponent `exp(A)`
     - If it is not possible to implement this function (like in `CUDA.jl`), you can define the `one(A)` function which returns the identity matrix with the size same as `A`. 
-    Then you need to [configure the evolution operator function to enable the Taylor expansion formula](@ref Matrix exponent optimization)
+    Then you need to [configure the evolution operator function to enable the Taylor expansion formula](@ref mexp_opt)
 
-!!! Tip
+!!! tip
     The `hamiltonian` function is slow enough - this is the price we have to pay for its flexibility.
     The most time-consuming tasks are allocating a new matrix and calling lambda-functions to evaluate the Peierls substitution.
+
     Avoid calling it when evaluating the `h(t)` for the evolution operator when possible.
