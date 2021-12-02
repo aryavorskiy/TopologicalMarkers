@@ -10,7 +10,7 @@ $\mathcal{U}(t) = T\left\{ e^{\frac{1}{i\hbar} \int_{t_0}^t \hat{H}(\tau) d\tau}
 The [`evolution_operator`](@ref) function calculates the evolution operator for a time-independent hamiltonian. 
 Its input parameters are the hamiltonian matrix `H` and the time interval `t`.
 
-## [Matrix exponent optimization](@id mexp_opt)
+## [Matrix exponent optimization](@id matrix_exp_opt)
 
 The matrix exponent is the heaviest linear algebra operation used in this project. 
 To speed up calculations in some times, you can set up the matrix exponent to be calculated in a simpler way with this function:
@@ -82,7 +82,7 @@ To make them compatible with the `@evolution` macro, you should define these ope
 - Basic arithmetic functions: `+`, `-`, `*`, `adjoint`
 - The matrix exponent `exp(A)`
     - If it is not possible to implement this function (like in `CUDA.jl`), you can define the `one(A)` function which returns the identity matrix with the size same as `A`. 
-    Then you need to [configure the evolution operator function to enable the Taylor expansion formula](@ref mexp_opt)
+    Then you need to [configure the evolution operator function to enable the Taylor expansion formula](@ref matrix_exp_opt)
 
 !!! tip
     The `hamiltonian` function is slow enough - this is the price we have to pay for its flexibility.

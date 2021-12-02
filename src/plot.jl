@@ -81,7 +81,7 @@ Generates optimal layout for multiple figures in a plot.
 - `figures_total`: the number of figures to place on the plot
 
 # Keyword arguments
-- `plot_aspect_ratio`: The aspect ratio of the plot. 1:1 bu default
+- `plot_aspect_ratio`: The aspect ratio of the plot. 1:1 by default
 - `figure_aspect_ratio`: the aspect ratio of one figure of the plot. 7:5 by default
 """
 function optimal_layout(figures_total::Int; plot_aspect_ratio::SizeType=nothing,

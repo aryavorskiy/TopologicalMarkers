@@ -86,5 +86,5 @@ gif(a, "example_animation.gif", fps = 10)
 See [Unitary evolution](@ref unitary_evolution) for detailed explanation.
 
 !!! tip
-    There are more examples of different use cases in this notebook: [github.com/aryavorskiy/TopologicalMarkers.jl/supplementary.ipynb](https://www.youtube.com/watch?v=E4WlUXrJgy4)
+    There are more examples of different use cases [in this folder](https://www.youtube.com/watch?v=E4WlUXrJgy4).
     All pictures from the article were created using this notebook.

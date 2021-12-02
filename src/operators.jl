@@ -30,20 +30,22 @@ end
 coord_operators(; kw...) = coord_operators(nothing; kw...)
 
 @doc raw"""
-    filled_projector(H[, fermi_energy = 0, T = 0])
+    filled_projector(H; <keyword arguments>)
 
 Returns a projector onto the filled states (in other words - a density matrix of the ground state).
-If `T` is non-zero, the state density will correspond to the Fermi-Dirac distribution.
 
 # Arguments
 - `H`: the hamiltonian matrix
-- `fermi_energy`: the Fermi energy level
-- `T`: temperature of the system
+
+# Keyword arguments
+- `fermi_energy`: the Fermi energy level. 0 by default
+- `T`: temperature of the system, in energy units. 0 by default.
+If value is non-zero, the state density will correspond to the Fermi-Dirac distribution
 """
-function filled_projector(H::Matrix{<:Complex{<:Real}}, fermi_energy::Float64 = 0., T::Float64 = 0.)
+function filled_projector(H::Matrix{<:Complex{<:Real}}; fermi_energy::Real = 0, T::Real = 0)
     val, vec = eigen(Hermitian(H))
     if T == 0
-        d = @. val ≤ fermi_energy |> Int
+        d = @. (val ≤ fermi_energy) |> Int
     else
         d = @. 1 / (exp((val - fermi_energy) / T) + 1)
     end

@@ -82,7 +82,7 @@ H0 == H1 == H2 # These are equal ways to specify the field
 ## Density and coordinate operators
 
 To calculate a density matrix for zero temperature, you can use the [`filled_projector`](@ref) function. 
-It accepts the hamiltonian matrix and returns a density matrix. You can also specify the Fermi level (which is zero by default).
+It accepts the hamiltonian matrix and returns a density matrix. You can also specify the Fermi level and the temperature (which are zero by default) - consult the corresponding page at the Library.
 
 You can also generate the coordinate operators using the [`coord_operators`](@ref) function. 
 It takes an optional parameter `symm` which defines if the operators are defined symmetrically 
@@ -200,9 +200,10 @@ gif(a, "example_animation.gif", fps = 10)
 
 Another way to calculate the LCM currents is the Streda formula. 
 
-This formula defines the LCM as the linear response of the density to the adiabatic field application: $c(r) = \frac{\delta P(r)}{\delta B}$.
-Such approach allows to evaluate currents of LCM quite easily - it is simply the linear response of the electric currents to the magnetic field: 
-$J_{streda}(r, r') = \frac{\delta J(r, r')}{\delta B}$.
+This formula defines the LCM as the linear response of the density to the adiabatic field application:
+$\mathcal{C}_s(r) = \frac{\delta P(r)}{\delta B}$.
+Such approach allows to evaluate currents of LCM quite easily: 
+$J_{s}(r, r') = \frac{\delta J(r, r')}{\delta B}$.
 
 Note that unlike Bianca-Resta currents, these currents are localized - the current between non-adjacent sites is always zero.
 
@@ -219,14 +220,14 @@ m0 = fill(-3, 22, 21)
 m0[6:12, 7:13] .= -1
 m1 = fill(-3, 22, 21)
 m1[7:13, 7:13] .= -1
-h(t) = hamiltonian(m0 + (m1 - m0) * min(1, t/τ), :c)
+h0 = hamiltonian(m0, :c)
+h1 = hamiltonian(m1, :c)
+h(t) = h0 + (h1 - h0) * min(1, t/τ)
 
 B = 1e-6
-function hb(t)
-    local H = h(t)
-    field!(H, @landau(B))
-    return H
-end
+hb0 = hamiltonian(m0, :c, field = @landau(B))
+hb1 = hamiltonian(m1, :c, field = @landau(B))
+hb(t) = hb0 + (hb1 - hb0) * min(1, t/τ)
 
 P0 = h(0) |> filled_projector
 P0b = hb(0) |> filled_projector
