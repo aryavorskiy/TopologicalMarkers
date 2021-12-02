@@ -13,7 +13,7 @@ Returns a tuple of coordinate operators (i. e. $\hat{X}$ and $\hat{Y}$).
 """
 function coord_operators(lattice_size::SizeType;
     symmetric::Bool=true)::NTuple{2,Matrix{Float64}}
-    lattice_size = _try_get_lattice_size(lattice_size)
+    lattice_size = _current_lattice_size(lattice_size)
     len = prod(lattice_size)
     operators = []
     for axis in 1:2
@@ -30,20 +30,22 @@ end
 coord_operators(; kw...) = coord_operators(nothing; kw...)
 
 @doc raw"""
-    filled_projector(H[, fermi_energy = 0, T = 0])
+    filled_projector(H; <keyword arguments>)
 
 Returns a projector onto the filled states (in other words - a density matrix of the ground state).
-If `T` is non-zero, the state density will correspond to the Fermi-Dirac distribution.
 
 # Arguments
 - `H`: the hamiltonian matrix
-- `fermi_energy`: the Fermi energy level
-- `T`: temperature of the system
+
+# Keyword arguments
+- `fermi_energy`: the Fermi energy level. 0 by default
+- `T`: temperature of the system, in energy units. 0 by default.
+If value is non-zero, the state density will correspond to the Fermi-Dirac distribution
 """
-function filled_projector(H::Matrix{<:Complex{<:Real}}, fermi_energy::Float64 = 0., T::Float64 = 0.)
+function filled_projector(H::Matrix{<:Complex{<:Real}}; fermi_energy::Real = 0, T::Real = 0)
     val, vec = eigen(Hermitian(H))
     if T == 0
-        d = @. val ≤ fermi_energy |> Int
+        d = @. (val ≤ fermi_energy) |> Int
     else
         d = @. 1 / (exp((val - fermi_energy) / T) + 1)
     end
@@ -62,7 +64,7 @@ Returns a skew-symmetric matrix of electric currents between sites.
 """
 function currents(H::AbstractMatrix{Complex{T}}, P::AbstractMatrix{Complex{T}},
     lattice_size::SizeType=nothing) where T <: Real
-    lattice_size = _try_get_lattice_size(lattice_size)
+    lattice_size = _current_lattice_size(lattice_size)
     currents_mat = zeros(prod(lattice_size), prod(lattice_size))
     for i in 1:prod(lattice_size), j in 1:(i - 1)
         if dist(lattice_size, i, j) == 1

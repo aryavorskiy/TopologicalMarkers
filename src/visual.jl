@@ -55,7 +55,7 @@ $\langle r | \hat{\mathcal{O}} | r \rangle$.
 """
 function heatmap_data(op::AbstractMatrix{Complex{T}},
     lattice_size::SizeType)::CoordinateRepr{T} where T <: Real
-    lattice_size = _try_get_lattice_size(lattice_size)
+    lattice_size = _current_lattice_size(lattice_size)
     markers = zeros(T, lattice_size)
     for i in 1:prod(lattice_size)
         markers[i] = tr(op[2 * i - 1:2 * i, 2 * i - 1:2 * i]) |> real
@@ -96,7 +96,7 @@ The output is a tuple of two vectors with equal length: one contains arrow origi
 function quiver_data(currents_mat::AbstractMatrix{<:Real}, lattice_size::SizeType=nothing;
     threshold::Real=0.1, dist_threshold::Real=Inf, xlims::NTuple{2, <:Real}=(-Inf, Inf),
     ylims::NTuple{2, <:Real}=(-Inf, Inf))
-    lattice_size = _try_get_lattice_size(lattice_size)
+    lattice_size = _current_lattice_size(lattice_size)
     ps = NTuple{2,<:Int}[]
     qs = NTuple{2,<:Real}[]
     for i in 1:prod(lattice_size), j in 1:(i - 1)

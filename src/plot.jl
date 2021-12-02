@@ -81,7 +81,7 @@ Generates optimal layout for multiple figures in a plot.
 - `figures_total`: the number of figures to place on the plot
 
 # Keyword arguments
-- `plot_aspect_ratio`: The aspect ratio of the plot. 1:1 bu default
+- `plot_aspect_ratio`: The aspect ratio of the plot. 1:1 by default
 - `figure_aspect_ratio`: the aspect ratio of one figure of the plot. 7:5 by default
 """
 function optimal_layout(figures_total::Int; plot_aspect_ratio::SizeType=nothing,
@@ -138,7 +138,7 @@ and the arrows depicting the currents will be blue:
 function plot_figure!(pl::AbstractPlot; hmap=nothing, currents=nothing, domain_mapping=nothing,
     xlims::SizeType=nothing, ylims::SizeType=nothing,
     lattice_size::SizeType=nothing, kw...)
-    lattice_size = _try_get_lattice_size(lattice_size)
+    lattice_size = _current_lattice_size(lattice_size)
     hmap_kw = _keys_by_prefix(kw, "hmap")
     currs_kw = _keys_by_prefix(kw, "currents")
     bounds_kw = _keys_by_prefix(kw, "bounds")
@@ -191,7 +191,7 @@ function plot_auto(args...; layout=nothing, plot_size=nothing,
     domain_mapping::Nullable{CoordinateRepr}=nothing, title="", cutaway_view=nothing,
     cutaway_views::AbstractVector{NTuple{2,Int}}=NTuple{2,Int}[], lattice_size=nothing,
     kw...)
-    lattice_size = _try_get_lattice_size(lattice_size)
+    lattice_size = _current_lattice_size(lattice_size)
     sites = []
     if cutaway_view !== nothing
         push!(sites, cutaway_view)
@@ -207,7 +207,7 @@ function plot_auto(args...; layout=nothing, plot_size=nothing,
         end
         layout = optimal_layout(figures_total)
     elseif layout === nothing
-        layout = optimal_layout(figures_total; plot_size=plot_size)
+        layout = optimal_layout(figures_total; plot_aspect_ratio=plot_size)
     end
     p = plot(layout=layout, size=plot_size)
 

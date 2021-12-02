@@ -70,18 +70,24 @@ quiver(ps, quiver = qs, color=:blue)
 
 These functions may come in handy if you want to plot multiple figures simultaneously and do not want to set the layout up manually.
 
-The [`plot_figure!`](@ref) function can be used to plot one figure. It has one argument - the `Plot` object to draw on. 
-You can draw a heatmap, a quiver plot or bounding lines between domains if you need to. What you have to do is pass a keyword argument:
-- `hmap` for heatmap
-- `currents` for quiver
-- `domain_mapping` for boundaries
+### Plot a single figure
 
-The `xlims` and `ylims` keywords have meaning traditional for plots.
-All other keyword arguments are automatically parsed and then passed to the plot function at different stages depending on the prefix of the key.
-- `hmap` is passed to heatmap
-- `currents` is passed to quiver
-- `bounds` is passed to boundaries
-For example, `hmapcolor = :viridis` means that the argument `color = :viridis` will be passed to the function when plotting the heatmap. 
+The [`plot_figure!`](@ref) function can be used to plot one figure. It has one argument - the `AbstractPlot` object to draw on.
+
+A figure consists of a heatmap, boundaries between domains, ans a quiver plot. Each part of figure can be configured in a following way: 
+
+You can set the data to visualize on the part of the figure using a **data argument** - 
+a keyword argument with a special name that can accept different data types.
+You can also style that part of the figure using keyword arguments beginning with a **setup prefix** - 
+it will be passed to the `plot()` function at the moment when this part of figure will be drawn.
+
+Information about different figure parts can be found in the following table:
+
+|Figure part|Data argument|Supported data|Setup prefix|
+|---|---|---|---|
+|Heatmap|`hmap`|`CoordinateRepr` - or a `Matrix` of the operator to find partial traces for; see [`heatmap_data`](@ref)|`hmap`|
+|Boundaries|`domain_mapping`|`CoordinateRepr{Symbol}` which maps sites do differens symbols meaning different domains|`bounds`|
+|Quiver|`currents`|`Matrix` for the weighted connectivity matrix for arrow length; usually such matrix is output of [`currents`](@ref) or [`@currents`](@ref)|`currents`|
 
 Here is an example:
 
@@ -107,6 +113,8 @@ plot_figure!(p, hmap = P, currents = cur / maximum(abs.(cur)), bounds = domains,
     boundscolor = :red)
 ```
 
+### Automatic figure arrangement
+
 The [`plot_auto`](@ref) function generates an optimal layout for the given amount of figures and then invokes `plot_figure!` multiple times.
 
 The arguments it takes are pairs like this:
@@ -116,11 +124,11 @@ title => heatmap => currents
 
 Here the first and the third arguments can be omitted.
 
-domain mapping can be set via the same keyword argument. Also you can create figures with cutaway views if you define cutaway viewpoints via `cutaway_views` or `cutaway_view` arguments.
+Domain mapping can be set via the same keyword argument - it will be the same for all figures. Also you can create figures with cutaway views if you define cutaway viewpoints via `cutaway_views` or `cutaway_view` arguments.
 
 Each cutaway viewpoint is a lattice site. For each one the function takes heatmap values for every site with the same y-coordinate and plots the heatmap values dependent on `x` on a separate plot. Each cutaway view is shown on the plot as a line, which will be later referred to as a splitline.
 
-This function also supports keyword argument parsing. The following prefixes are supported:
+This function, like `plot_figure!`, supports setup prefixes. They are passed to corresponding `plot()` calls to **all** figures: 
 - `hmap` is passed to heatmap
 - `currents` is passed to quiver
 - `bounds` is passed to boundaries
@@ -146,3 +154,10 @@ plot_auto("LCM" => ch, "Streda" => str, domain_mapping = CoordinateRepr(m_lattic
     plot_size = (800, 600), hmapclims = (-1.5, 1.5), currentscolor = :yellow, 
     cutaway_view = (13, 13), splitlinecolor = :brown, cutawaystyle = :dashdot)
 ```
+
+!!! note
+    The `plot_auto` function is very nice if you need to visualize data on several figures quickly, but does not give you enough control sometimes.
+    That is why it is quite likely that you will have to use `plot_figure!` and a custom-generated plot layout. 
+    
+    However, you can generate a `Layout` for many figures using the [`optimal_layout`](@ref) function - 
+    all you will need to do is specify the figure count and preferred aspect ratio for the figure and the whole plot.

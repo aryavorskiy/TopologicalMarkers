@@ -50,7 +50,7 @@ This integral is calculated explicitly for every hopping, using the `A` function
 - `intervals`: the number of intervals to use when calculating the Peierls substitution phase factor
 """
 function field!(H::Matrix{ComplexF64}, A::Function, lattice_size::SizeType = nothing; intervals::Int=10)
-    lattice_size = _try_get_lattice_size(lattice_size)
+    lattice_size = _current_lattice_size(lattice_size)
     local function peierls(i, j)::ComplexF64
         phase::Float64 = 0
         r1 = index_to_pair(lattice_size, i)

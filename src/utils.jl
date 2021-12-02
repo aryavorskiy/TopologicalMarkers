@@ -8,7 +8,9 @@ SizeType = Nullable{NTuple{2,Int}}
 
 CURRENT_LATTICE_SIZE = nothing
 
-function _try_get_lattice_size(lattice_size::SizeType) 
+# ! Use _current_lattice_size() instead of CURRENT_LATTICE_SIZE
+
+function _current_lattice_size(lattice_size::SizeType = nothing)
     if lattice_size !== nothing
         return lattice_size
     end
@@ -38,19 +40,24 @@ pair_to_index(lattice_size::NTuple{2,Int}, a::Int, b::Int) = (b - 1) % lattice_s
 
 pair_to_index(lattice_size::NTuple{2,Int}, pair) = pair_to_index(lattice_size, pair[1], pair[2])
 
+pair_to_index(pair) = pair_to_index(_current_lattice_size(), pair)
+
 function index_to_pair(lattice_size::NTuple{2,Int}, i::Int)
     a = i % lattice_size[1] == 0 ? lattice_size[1] : i % lattice_size[1]
     return SA[a::Int, (round(Int, (i - a) / lattice_size[1]) + 1)::Int]
 end
 
+index_to_pair(i::Int) = index_to_pair(_current_lattice_size(), i)
+
 dist(lattice_size, i, j) = norm(index_to_pair(lattice_size, i) - index_to_pair(lattice_size, j))
 
-function adjacent_sites(lattice_size::NTuple{2,Int}, site, order::Int)
-    adj = Set()
+function adjacent_sites(site::T, lattice_size::NTuple{2,Int} = _current_lattice_size();
+    order::Int=1)::Set{T} where T
+    adj = Set{T}()
     for i in 0:order, sig1 in (-1, 1), sig2 in (-1, 1)
-        new_site = site + SA[i * sig1, order - i] * sig2
-        if all(@. 0 < new_site < lattice_size)
-            push!(adj, new_site)
+        new_site = [site...] + [i * sig1, order - i] * sig2
+        if all(@. 0 < new_site <= lattice_size)
+            push!(adj, convert(T, new_site))
         end
     end
     return adj

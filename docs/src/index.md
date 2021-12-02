@@ -45,7 +45,7 @@ plot_auto("Bianca-Resta" => ch, "Streda" => str, plot_size = (800, 600),
 
 See [Hamiltonian generation](@ref) and [Visualization](@ref) for detailed explanation.
 
-### Adiabatic flux quantum application
+### [Adiabatic flux quantum application](@id example_flux)
 
 To understand better how the particle density and electric currents react to adiabatic flux quantum appearance, let us create an animation of it.
 The Chern insulator is in topological phase, with $m = 1$.
@@ -86,5 +86,5 @@ gif(a, "example_animation.gif", fps = 10)
 See [Unitary evolution](@ref unitary_evolution) for detailed explanation.
 
 !!! tip
-    There are more examples of different use cases in this notebook: [github.com/aryavorskiy/TopologicalMarkers.jl/supplementary.ipynb](https://www.youtube.com/watch?v=E4WlUXrJgy4)
+    There are more examples of different use cases [in this folder](https://www.youtube.com/watch?v=E4WlUXrJgy4).
     All pictures from the article were created using this notebook.
