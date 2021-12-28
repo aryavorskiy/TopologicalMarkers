@@ -39,7 +39,7 @@ end
         cutaway_view=(8, 8))
 
         pl = plot()
-        currs = @currents @J_treq ham_b P X Y
+        currs = @currents @J_eq ham_b P X Y
         plot_figure!(pl, hmap=4π * im * P * X * P * Y * P, currents=currs, xlims=(6,10),
             ylims=(8, 12), domains = CoordinateRepr(ms))
     end

@@ -7,69 +7,17 @@ get_curr(operator, i, j) = operator[2 * i - 1:2 * i, 2 * j - 1:2 * j]
 
 Calculates the Bianca-Resta current part using the following formula:
 
-$J_c(r, r') = \\ 4\pi ( 
+$J_c(r, r') = \\ 4\pi (
 \langle r | PXPYP | r' \rangle \langle r' | H | r \rangle -
 \langle r | H | r' \rangle \langle r' | PXPYP | r \rangle
 )$
 """
 macro J_c(H, P, X, Y)
-    quote 
+    quote
         global J_type = "J_c"
         local C = 4π * $(esc(:($P * $X * $P * $Y * $P)))
         curr_c(i::Int, j::Int) = - real(tr(
-            get_curr($(esc(H)), i, j) * get_curr(C, j, i) - get_curr(C, i, j) * get_curr($(esc(H)), j, i) 
-        ))
-    end
-end
-
-@doc raw"""
-    @J_m(H, P, X, Y)
-
-Calculates the Bianca-Resta current part using the following formula:
-
-$J_m(r, r') = \\ 4\pi ( 
-\langle r | PHXP | r' \rangle \langle r' | PYP | r \rangle -
-\langle r | PYP | r' \rangle \langle r' | PHXP | r \rangle \\ -
-\langle r | PHYP | r' \rangle \langle r' | PXP | r \rangle +
-\langle r | PXP | r' \rangle \langle r' | PHYP | r \rangle
-)$
-"""
-macro J_m(H, P, X, Y)
-    quote
-        global J_type = "J_m"
-        Jpx = $(esc(:($P * $H * $X * $P)))
-        Jpy = $(esc(:($P * $H * $Y * $P)))
-        Xp = $(esc(:($P * $X * $P)))
-        Yp = $(esc(:($P * $Y * $P)))
-        curr_m(i::Int, j::Int) = 4π * real(tr(
-            get_curr(Jpx, i, j) * get_curr(Yp, j, i) - get_curr(Yp, i, j) * get_curr(Jpx, j, i)
-            - get_curr(Jpy, i, j) * get_curr(Xp, j, i) + get_curr(Xp, i, j) * get_curr(Jpy, j, i)
-        ))
-    end
-end
-
-@doc raw"""
-    @J_eq(H, P, X, Y)
-
-Calculates the Bianca-Resta current using the following formula:
-
-$J_{eq}(r, r') = \\ 4\pi ( 
-\langle r | [P,H]XP | r' \rangle \langle r' | PYP | r \rangle -
-\langle r | PYP | r' \rangle \langle r' | [P,H]XP | r \rangle \\ -
-\langle r | [P,H]YP | r' \rangle \langle r' | PXP | r \rangle +
-\langle r | PXP | r' \rangle \langle r' | [P,H]YP | r \rangle
-)$
-"""
-macro J_eq(H, P, X, Y)
-    quote
-        global J_type = "J_eq"
-        local Jpx = $(esc(:(($H * $P - $P * $H) * $X * $P)))
-        local Jpy = $(esc(:(($H * $P - $P * $H) * $Y * $P)))
-        local Xp = $(esc(:($P * $X * $P)))
-        local Yp = $(esc(:($P * $Y * $P)))
-        curr_nu(i::Int, j::Int) = - 4π * real(tr(
-            get_curr(Jpx, i, j) * get_curr(Yp, j, i) - get_curr(Yp, i, j) * get_curr(Jpx, j, i)
-            - get_curr(Jpy, i, j) * get_curr(Xp, j, i) + get_curr(Xp, i, j) * get_curr(Jpy, j, i)
+            get_curr($(esc(H)), i, j) * get_curr(C, j, i) - get_curr(C, i, j) * get_curr($(esc(H)), j, i)
         ))
     end
 end
@@ -79,7 +27,7 @@ end
 
 Calculates the Bianca-Resta current part using the following formula:
 
-$J_{m_{tr}}(r, r') = \\ 4\pi ( 
+$J_{m_{tr}}(r, r') = \\ 4\pi (
 \langle r | P | r' \rangle \langle r' | [H,X] PYP | r \rangle -
 \langle r | [H,X] PYP | r' \rangle \langle r' | P | r \rangle \\ -
 \langle r | PYP | r' \rangle \langle r' | [H,X] P | r \rangle +
@@ -103,7 +51,7 @@ macro J_m_tr(H, P, X, Y)
         local Jyp = Jy * P
         local Jyxp = Jy * Xp
         local Jxyp = Jx * Yp
-        curr_m_inv(i::Int, j::Int) = 2π * real(tr(
+        curr_m_tr(i::Int, j::Int) = 2π * real(tr(
             get_curr(P, i, j) * get_curr(Jxyp, j, i) - get_curr(Jxyp, i, j) * get_curr(P, j, i)
             - get_curr(Yp, i, j) * get_curr(Jxp, j, i) + get_curr(Jxp, i, j) * get_curr(Yp, j, i)
             - get_curr(P, i, j) * get_curr(Jyxp, j, i) + get_curr(Jyxp, i, j) * get_curr(P, j, i)
@@ -113,11 +61,11 @@ macro J_m_tr(H, P, X, Y)
 end
 
 @doc raw"""
-    @J_treq(H, P, X, Y)
+    @J_eq(H, P, X, Y)
 
 Calculates the Bianca-Resta current using the following formula:
 
-$J_{treq}(r, r') = \\ 4\pi ( 
+$J_{eq}(r, r') = \\ 4\pi (
 \langle r | [H,P] P | r' \rangle \langle r' | PXPYP | r \rangle -
 \langle r | PXPYP | r' \rangle \langle r' | [H,P] P | r \rangle \\ -
 \langle r | [H,P] P | r' \rangle \langle r' | PYPXP | r \rangle +
@@ -132,9 +80,9 @@ $J_{treq}(r, r') = \\ 4\pi (
 \langle r | PXP | r' \rangle \langle r' | P [H,P] YP | r \rangle
 )$
 """
-macro J_treq(H, P, X, Y)
-    quote        
-        global J_type = "J_treq"
+macro J_eq(H, P, X, Y)
+    quote
+        global J_type = "J_eq"
         local Pd = $(esc(:(($H * $P - $P * $H))))
         local P = $(esc(P))
         local X = $(esc(X))
@@ -159,30 +107,16 @@ macro J_treq(H, P, X, Y)
 end
 
 """
-    @J_inv(H, P, X, Y)
+    @J_loc(H, P, X, Y)
 
 Calculates the sum of `@J_c` and `@J_m_inv` currents.
 """
-macro J_inv(H, P, X, Y)
+macro J_loc(H, P, X, Y)
     quote
         jc = $(esc(:(@J_c($H, $P, $X, $Y))))
         jminv = $(esc(:(@J_m_inv($H, $P, $X, $Y))))
-        global J_type = "J_inv"
+        global J_type = "J_loc"
         curr_inv(i, j) = jc(i, j) + jminv(i, j)
-    end
-end
-
-"""
-    @J_b(H, P, X, Y)
-
-Calculates the sum of `@J_c` and `@J_m` currents.
-"""
-macro J_b(H, P, X, Y)
-    quote
-        jc = $(esc(:(@J_c($H, $P, $X, $Y))))
-        jm = $(esc(:(@J_m($H, $P, $X, $Y))))
-        global J_type = "J_b"
-        curr_inv(i, j) = jc(i, j) + jm(i, j)
     end
 end
 

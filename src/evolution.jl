@@ -121,10 +121,10 @@ macro evolution(rules, loop)
                     local $(esc(p_target_ev)) = nothing
                 end
                 local p_evol = quote
-                    if $(esc(h_eval_new)) != $(esc(h_eval))
+                    if $(esc(h_eval_new)) != $(esc(h_eval)) || dt != dt_old
                         $(esc(p_target_ev)) = evolution_operator($(esc(h_eval_new)), dt)
                     end
-                    $(esc(h_eval)) != $(esc(h_eval_new))
+                    $(esc(h_eval)) = $(esc(h_eval_new))
                     $(esc(p_target)) = $(esc(p_target_ev)) * $(esc(p_target)) * adjoint($(esc(p_target_ev)))
                 end
                 append!(main_block.args, p_init.args)
@@ -139,6 +139,7 @@ macro evolution(rules, loop)
     push!(new_loop_body.args, :($(esc(loop_body))))
     local new_loop = quote
         local t_inner = 0.
+        local dt_old = 0.
         local len = length($(esc(loop_range)))
         p = Progress(len, dt=0.5, barglyphs = BarGlyphs("[=> ]"), showspeed = true)
         for $(esc(loop_var)) in $(esc(loop_range))
@@ -146,6 +147,7 @@ macro evolution(rules, loop)
             $new_loop_body
             ProgressMeter.next!(p)
             t_inner = $(esc(loop_var))
+            dt_old = dt
         end
     end
     append!(main_block.args, new_loop.args)
