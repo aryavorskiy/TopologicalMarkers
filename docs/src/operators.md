@@ -128,32 +128,19 @@ For example, if we define it using the Bianca-Resta formula $c(r) = 4\pi i \lang
 we can define the current $J(r, r')$ as some formula that complies the following rules:
 
 $$\begin{cases}
-    d_t c(r) = \sum_{r'} J(r, r') \\
+    \dot{c}(r) = \sum_{r'} J(r, r') \\
     J(r, r') = - J(r', r)
-\end{cases}, \hspace{0.5cm}
-d_t c(r) = 4\pi i \langle r | i[H, PXQYP] | r \rangle
-= 4\pi i \langle r | i([H, P]XQYP + PX[H, Q]YP + PXQY[H, P]) | r \rangle
-$$
+\end{cases} \hspace{1cm}
+\dot{c}(r) = 4\pi i \langle r | i[H, PXQYP] | r \rangle = \\
+= 4\pi i \langle r | i([H, P]XQYP + PX[H, Q]YP + PXQY[H, P]) | r \rangle$$
 
 Let us call them **Bianca-Resta currents**.
 
-There are four formulas like that in this package. Each is a macro that takes matrices of the hamiltonian, the density and coordinate operators
-to generate a function that calculates the current between two sites (given their indices as parameters).
-
-The difference between them is that some of them are translationally invariant - if we shift the coordinate operators (e. g. redefine $\hat{X}$ as $\hat{X} + X_0$), the values of currents will not change. Also some of them are _stable_ - all currents are equal to zero if $P$ is a density matrix of a stationary state of hamiltonian $\hat{H}$ that does not depend on time.
-
-These traits of macros in this package are in the following table:
-
-|Macro|Translational invariance|Stability|
-|---|---|---|
-|`J_b`| No | No |
-|`J_tr`| Yes | No |
-|`J_eq`| No | Yes |
-|`J_treq`| Yes | Yes |
+There are two formulas like that in this package. Each is a macro that takes matrices of the hamiltonian, 
+the density and coordinate operators to generate a function that calculates the current between two sites (given their indices as parameters). 
+The difference between them is that [`@J_loc`](@ref) is localized, and [`@J_eq`](@ref) is equal to zero in equilibrium states.
 
 To find out more about Bianca-Resta currents, [check out this section](@ref bianca_resta_currents).
-
-Each one takes  and returns a function that calculates a current given indices of 2 sites.
 
 To generate a matrix with currents, use the [`@currents`](@ref) macro.
 
@@ -174,7 +161,7 @@ a = Animation()
     P0 => h => P
 ] for t in 0:0.1:3
     c = -4pi * im * P * X * P * Y * P
-    cur = @currents @J_treq H P X Y
+    cur = @currents @J_eq H P X Y
     plot_auto("LCM currents" => c => cur / 5, hmapclims = (-4, 1))
     frame(a)
 end
@@ -242,7 +229,7 @@ a = Animation()
     cur = currents(H, P)
     curb = currents(Hb, Pb)
     plot_auto("Streda currents" => (Pb - P) / B => (curb - cur) / B, 
-        hmapclims = (-3, 3), title = "Time: $t")
+        hmapclims = (-3, 3))
     frame(a)
 end
 

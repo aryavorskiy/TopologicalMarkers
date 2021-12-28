@@ -40,6 +40,8 @@ pair_to_index(lattice_size::NTuple{2,Int}, a::Int, b::Int) = (b - 1) % lattice_s
 
 pair_to_index(lattice_size::NTuple{2,Int}, pair) = pair_to_index(lattice_size, pair[1], pair[2])
 
+pair_to_index(a::Int, b::Int) = pair_to_index(_current_lattice_size(), a, b)
+
 pair_to_index(pair) = pair_to_index(_current_lattice_size(), pair)
 
 function index_to_pair(lattice_size::NTuple{2,Int}, i::Int)

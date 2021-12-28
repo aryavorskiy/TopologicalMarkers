@@ -10,21 +10,6 @@ $\mathcal{U}(t) = T\left\{ e^{\frac{1}{i\hbar} \int_{t_0}^t \hat{H}(\tau) d\tau}
 The [`evolution_operator`](@ref) function calculates the evolution operator for a time-independent hamiltonian. 
 Its input parameters are the hamiltonian matrix `H` and the time interval `t`.
 
-## [Matrix exponent optimization](@id matrix_exp_opt)
-
-The matrix exponent is the heaviest linear algebra operation used in this project. 
-To speed up calculations in some times, you can set up the matrix exponent to be calculated in a simpler way with this function:
-
-```julia
-TopologicalMarkers._configure_evolution!(simplify::Bool; <keyword arguments...>)
-```
-
-If the `simplify` parameter is set to to `true`, the matrix exponent is evaluated using the Taylor series.
-You can set other parameters with following keywords:
-
-- `order`: The quantity of members of the Taylor expansion to be calculated
-- `threshold`: To avoid precision loss, if the `t` parameter is greater than `threshold`, the exponent will be evaluated using the `exp` function. Set to `nothing` to always use Taylor expansion.
-
 ## The evolution macro
 
 This macro can be quite useful if your hamiltonian depends on time or if there are multiple hamiltonians in your experiment.
@@ -82,10 +67,28 @@ To make them compatible with the `@evolution` macro, you should define these ope
 - Basic arithmetic functions: `+`, `-`, `*`, `adjoint`
 - The matrix exponent `exp(A)`
     - If it is not possible to implement this function (like in `CUDA.jl`), you can define the `one(A)` function which returns the identity matrix with the size same as `A`. 
-    Then you need to [configure the evolution operator function to enable the Taylor expansion formula](@ref matrix_exp_opt)
+    Then you need to configure the evolution operator function to enable the Taylor expansion formula - see paragraph below.
+
+### Matrix exponent optimization
+
+The matrix exponent is the most time-consuming linear algebra operation used in this project.
+The [`@evolution`] macro is built to minimize the quantity of matrix exponent call, but it doesn't help if the hamiltonian changes with time.
+To make computation faster in this case, you can set up the matrix exponent to be calculated using Taylor expansion - this will save a lot of time, but may also impact accuracy dramatically.
+
+The matrix exponent that will be used 
+
+```julia
+TopologicalMarkers._configure_evolution!(simplify::Bool; <keyword arguments...>)
+```
+
+If the `simplify` parameter is set to to `true`, the matrix exponent is evaluated using the Taylor series.
+You can set other parameters with following keywords:
+
+- `order`: The quantity of members of the Taylor expansion to be calculated
+- `threshold`: To avoid precision loss, if the `t` parameter is greater than `threshold`, the exponent will be evaluated using the `exp` function. Set to `nothing` to use Taylor expansion always.
 
 !!! tip
     The `hamiltonian` function is slow enough - this is the price we have to pay for its flexibility.
     The most time-consuming tasks are allocating a new matrix and calling lambda-functions to evaluate the Peierls substitution.
 
-    Avoid calling it when evaluating the `h(t)` for the evolution operator when possible.
+    Avoid calling this function while evaluating the `h(t)` for the evolution operator when possible.
