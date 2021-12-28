@@ -12,7 +12,3 @@ This package can be installed using Julia's package manager via REPL:
 ```julia-repl
 pkg> add https://github.com/aryavorskiy/TopologicalMarkers
 ```
-
-## Usage examples
-
-- []

@@ -12,12 +12,12 @@ Returns a tuple of coordinate operators (i. e. $\hat{X}$ and $\hat{Y}$).
 - `symmetric`: true if the operator is symmetrically defined (in other words, the central site of the lattice corresponds to `(0, 0)`), false otherwise. True by default
 """
 function coord_operators(lattice_size::SizeType;
-    symmetric::Bool=true)::NTuple{2,Matrix{Float64}}
+    symmetric::Bool = true)::NTuple{2,Matrix{Float64}}
     lattice_size = _current_lattice_size(lattice_size)
     len = prod(lattice_size)
     operators = []
     for axis in 1:2
-        op_diagonal = fill(0., len * 2)
+        op_diagonal = fill(0., 2len)
         for i in 1:lattice_size[1], j in 1:lattice_size[2]
             site = pair_to_index(lattice_size, i, j)
             op_diagonal[2site - 1:2site] .= ((i, j)[3 - axis] - symmetric * (lattice_size[3 - axis] + 1) / 2)
@@ -69,7 +69,7 @@ function currents(H::AbstractMatrix{Complex{T}}, P::AbstractMatrix{Complex{T}},
     for i in 1:prod(lattice_size), j in 1:(i - 1)
         if dist(lattice_size, i, j) == 1
             hop = H[2i - 1:2i, 2j - 1:2j]
-            curr = 2 * tr(-im * hop * P[2j - 1:2j, 2i - 1:2i]) |> real
+            curr = 2tr(-im * hop * P[2j - 1:2j, 2i - 1:2i]) |> real
             currents_mat[i, j] = curr
             currents_mat[j, i] = -curr
         end
