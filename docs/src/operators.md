@@ -128,12 +128,11 @@ For example, if we define it using the Bianca-Resta formula $c(r) = 4\pi i \lang
 we can define the current $J(r, r')$ as some formula that complies the following rules:
 
 $$\begin{cases}
-    d_t c(r) = \sum_{r'} J(r, r') \\
+    \dot{c}(r) = \sum_{r'} J(r, r') \\
     J(r, r') = - J(r', r)
-\end{cases}, \hspace{0.5cm}
-d_t c(r) = 4\pi i \langle r | i[H, PXQYP] | r \rangle
-= 4\pi i \langle r | i([H, P]XQYP + PX[H, Q]YP + PXQY[H, P]) | r \rangle
-$$
+\end{cases} \hspace{1cm}
+\dot{c}(r) = 4\pi i \langle r | i[H, PXQYP] | r \rangle = \\
+= 4\pi i \langle r | i([H, P]XQYP + PX[H, Q]YP + PXQY[H, P]) | r \rangle$$
 
 Let us call them **Bianca-Resta currents**.
 
@@ -242,7 +241,7 @@ a = Animation()
     cur = currents(H, P)
     curb = currents(Hb, Pb)
     plot_auto("Streda currents" => (Pb - P) / B => (curb - cur) / B, 
-        hmapclims = (-3, 3), title = "Time: $t")
+        hmapclims = (-3, 3))
     frame(a)
 end
 

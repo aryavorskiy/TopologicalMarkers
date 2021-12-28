@@ -123,6 +123,7 @@ or a linear operator matrix (then the `CoordinateRepr` will be generated automat
 - `domain_mapping`: a `CoordinateRepr` object that represents domain mapping. The boundaries between different domains will be drawn.
 - `currents`: a matrix containing currents between sites
 - `xlims` and `ylims`: objects of type `Tuple{Int, Int}` that define the limits of the x- and y- axes respectively
+- `scale_currents`: `true` to scale the quiver arrows that they do not overlap. `false` otherwise
 
 All other keyword arguments with the following prefixes are passed to the `plot!` function:
 - `hmap` for the heatmap
@@ -136,11 +137,11 @@ and the arrows depicting the currents will be blue:
 `plot_figure!(..., hmapclims=(-3, 3), boundsstyle=:dot, :currentscolor=:green)`
 """
 function plot_figure!(pl::AbstractPlot; hmap=nothing, currents=nothing, domain_mapping=nothing,
-    xlims::SizeType=nothing, ylims::SizeType=nothing,
+    xlims::SizeType=nothing, ylims::SizeType=nothing, scale_currents::Bool=false,
     lattice_size::SizeType=nothing, kw...)
     lattice_size = _current_lattice_size(lattice_size)
     hmap_kw = _keys_by_prefix(kw, "hmap")
-    currs_kw = _keys_by_prefix(kw, "currents")
+    currents_kw = _keys_by_prefix(kw, "currents")
     bounds_kw = _keys_by_prefix(kw, "bounds")
     xlims = xlims !== nothing ? xlims : (0, lattice_size[1] + 1)
     ylims = ylims !== nothing ? ylims : (0, lattice_size[2] + 1)
@@ -151,8 +152,15 @@ function plot_figure!(pl::AbstractPlot; hmap=nothing, currents=nothing, domain_m
         plot_boundaries!(pl, domain_mapping; bounds_kw...)
     end
     if currents !== nothing
-        ps, qs = quiver_data(currents, lattice_size, xlims=xlims, ylims=ylims)
-        quiver!(pl, ps; quiver=qs, currs_kw...)
+        ps, qs = quiver_data(currents, lattice_size, xlims=xlims, ylims=ylims, threshold=0)
+        filtered_pq = [
+            (pt, qv) for (pt, qv) in zip(ps, qs) if
+            xlims[1] <= pt[1] <= xlims[2] && ylims[1] <= pt[2] <= ylims[2]
+        ]
+        q_mx = scale_currents ? maximum(norm.(getindex.(filtered_pq, 2))) : 1
+        ps, qs = quiver_data(currents, lattice_size, xlims=xlims, ylims=ylims, threshold = 0.1q_mx)
+        qs = [q .* (0.9 / q_mx) for q in qs]
+        quiver!(pl, ps; quiver=qs, currents_kw...)
     end
 
     xlims!(pl, xlims)

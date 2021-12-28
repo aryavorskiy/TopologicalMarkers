@@ -84,7 +84,7 @@ it will be passed to the `plot()` function at the moment when this part of figur
 Information about different figure parts can be found in the following table:
 
 |Figure part|Data argument|Supported data|Setup prefix|
-|---|---|---|---|
+|:---|:---|:---|:---|
 |Heatmap|`hmap`|`CoordinateRepr` - or a `Matrix` of the operator to find partial traces for; see [`heatmap_data`](@ref)|`hmap`|
 |Boundaries|`domain_mapping`|`CoordinateRepr{Symbol}` which maps sites do differens symbols meaning different domains|`bounds`|
 |Quiver|`currents`|`Matrix` for the weighted connectivity matrix for arrow length; usually such matrix is output of [`currents`](@ref) or [`@currents`](@ref)|`currents`|
@@ -107,7 +107,7 @@ domains = CoordinateRepr(zs)
 H = hamiltonian(ms, :c, field = @landau(B), domain_mapping = domains)
 P = filled_projector(H)
 cur = currents(H, P)
-p = plot(title="State density in two-domain insulator")
+p = plot(title="State density in a two-domain insulator")
 plot_figure!(p, hmap = P, currents = cur / maximum(abs.(cur)), bounds = domains, 
     hmapcolor = :viridis, currentscolor = :blue, boundsstyle = :dashdotdot, 
     boundscolor = :red)

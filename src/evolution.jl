@@ -125,7 +125,7 @@ macro evolution(rules, loop)
                         $(esc(p_target_ev)) = evolution_operator($(esc(h_eval_new)), dt)
                     end
                     $(esc(h_eval)) != $(esc(h_eval_new))
-                    $(esc(p_target)) = $(esc(p_target_ev)) * $(esc(p_target)) * $(esc(p_target_ev))'
+                    $(esc(p_target)) = $(esc(p_target_ev)) * $(esc(p_target)) * adjoint($(esc(p_target_ev)))
                 end
                 append!(main_block.args, p_init.args)
                 append!(p_evolvers.args, p_evol.args)
