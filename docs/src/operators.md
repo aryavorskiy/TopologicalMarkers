@@ -170,7 +170,7 @@ gif(a, "example_animation.gif", fps = 10)
 ```
 
 !!! warning
-    You may get an error entitled as `Please specify lattice size explicitly` while running one of these functions. 
+    You may get an error entitled as `Failed to obtain current lattice size` while running one of these functions. 
     This is caused by the fact that all these function require an additional argument, the lattice size, 
     but by default they use the lattice size for the last hamiltonian generated.
 

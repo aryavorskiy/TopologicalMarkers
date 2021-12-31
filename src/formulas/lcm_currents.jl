@@ -95,7 +95,7 @@ macro J_eq(H, P, X, Y)
         local pdyp = P * Pd * Y * P
         local pdxpyp = pdxp * pyp
         local pdypxp = pdyp * pxp
-        curr_best(i::Int, j::Int) = - 4π * real(tr(
+        curr_eq(i::Int, j::Int) = - 4π * real(tr(
             get_curr(pdp, i, j) * get_curr(pxpyp, j, i) - get_curr(pxpyp, i, j) * get_curr(pdp, j, i)
             - get_curr(pdp, i, j) * get_curr(pxpyp', j, i) + get_curr(pxpyp', i, j) * get_curr(pdp, j, i)
             + get_curr(P, i, j) * get_curr(pdxpyp, j, i) - get_curr(pdxpyp, i, j) * get_curr(P, j, i)
@@ -109,7 +109,7 @@ end
 """
     @J_loc(H, P, X, Y)
 
-Calculates the sum of `@J_c` and `@J_m_inv` currents.
+Calculates the sum of `@J_c` and `@J_m_tr` currents.
 """
 macro J_loc(H, P, X, Y)
     quote

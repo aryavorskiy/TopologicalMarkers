@@ -1,8 +1,3 @@
-function index_to_pair(lattice_size::NTuple{2,Int}, i::Int)::Vector{Int}
-    a = i % lattice_size[1] == 0 ? lattice_size[1] : i % lattice_size[1]
-    return [a, round(Int, (i - a) / lattice_size[1]) + 1]
-end
-
 @testset "LCM current macros" begin
     siz = (15, 15)
     ms = CoordinateRepr(ones(siz))
