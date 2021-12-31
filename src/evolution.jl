@@ -121,7 +121,7 @@ macro evolution(rules, loop)
                     local $(esc(p_target_ev)) = nothing
                 end
                 local p_evol = quote
-                    if $(esc(h_eval_new)) != $(esc(h_eval)) || dt != dt_old
+                    if $(esc(h_eval_new)) != $(esc(h_eval)) || dt_changed
                         $(esc(p_target_ev)) = evolution_operator($(esc(h_eval_new)), dt)
                     end
                     $(esc(h_eval)) = $(esc(h_eval_new))
@@ -140,10 +140,14 @@ macro evolution(rules, loop)
     local new_loop = quote
         local t_inner = 0.
         local dt_old = 0.
-        local len = length($(esc(loop_range)))
-        p = Progress(len, dt=0.5, barglyphs = BarGlyphs("[=> ]"), showspeed = true)
+        local p = Progress(length($(esc(loop_range))), dt=0.5, barglyphs = BarGlyphs("[=> ]"), showspeed = true)
+        local dt_changed::Bool = false
         for $(esc(loop_var)) in $(esc(loop_range))
             local dt = $(esc(loop_var)) - t_inner
+            dt_changed = abs(dt - dt_old) / dt > 1e-12
+            if dt_changed
+                dt_old = dt
+            end
             $new_loop_body
             ProgressMeter.next!(p)
             t_inner = $(esc(loop_var))

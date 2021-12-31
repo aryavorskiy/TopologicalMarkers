@@ -9,6 +9,13 @@
     zmap[2,2] = :Int
     domains!(h, CoordinateRepr(zmap))
     domains!(h, zmap, :n)
+
+    siz = (3, 3)
+    @test hamiltonian(2, siz) == hamiltonian(2ones(siz), :c) == hamiltonian(CoordinateRepr(2ones(siz)))
+    @test hamiltonian(2, siz) == hamiltonian(2, siz, pbc = (false, false))
+    @test hamiltonian(2, siz) != hamiltonian(2, siz, pbc = (true, false))
+    @test hamiltonian(2, siz) != hamiltonian(2, siz, pbc = (false, true))
+    @test hamiltonian(2, siz) != hamiltonian(2, siz, pbc = (true, true))
 end
 
 @testset "Currents test" begin

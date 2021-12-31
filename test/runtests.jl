@@ -62,6 +62,17 @@ end
         end
     end
 
+    @testset "Domain mapping" begin
+        siz = (15, 15)
+        domain_map = fill(:base, siz)
+        domain_map[6:10, 6:10] .= :center
+        H = hamiltonian(1, siz, domain_mapping = domain_map)
+        P = filled_projector(H)
+        X, Y = coord_operators()
+        c = 4pi * im * P * X * P * Y * P
+        plot_auto(c, bounds = domain_map)
+    end
+
     @testset "Adiabatic field on + simplified" begin
         time_domain = 0:0.1:30
         ms = CoordinateRepr(ones(15, 15))

@@ -111,6 +111,7 @@ domains!(H::Matrix{ComplexF64}, domain_mapping::AbstractMatrix{Symbol}, repr_spe
 @doc raw"""
     hamiltonian{T}(m_repr; <keyword arguments>)
     hamiltonian{T}(m_lattice, repr_spec; <keyword arguments>)
+    hamiltonian{T}(m, size; <keyword arguments>)
 
 Generates a Hamiltonian operator for a Chern insulator using the following formula
 
@@ -122,7 +123,8 @@ h. c.$
 
 # Arguments
 - `m_repr`: The value of `m` on different sites, in `CoordinateRepr` format
-Alternatively, pass a matrix and a representation specifier (see `CoordinateRepr` for more information)
+- `m_lattice` and `repr_spec`: Alternatively, pass a matrix and a representation specifier (see `CoordinateRepr` for more information)
+- `m` and `size`: If the `m` parameter is the same on every lattice site, you only need to set the parameter value and the lattice
 
 # Keyword arguments
 - `pbc`: Periodic boundary conditions. A `Tuple{Bool, Bool}`, each element sets boundary conditions for the horizontal and vertical edge respectively. Default is `(false, false)`
@@ -158,3 +160,6 @@ end
 
 hamiltonian(m_lattice::AbstractMatrix{<:Real}, repr_spec::Symbol; kw...) =
     hamiltonian(CoordinateRepr(m_lattice, repr_spec); kw...)
+
+hamiltonian(m::Real, size::NTuple{2, Int}; kw...) =
+    hamiltonian(m * ones(size), :c; kw...)

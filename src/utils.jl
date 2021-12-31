@@ -17,10 +17,16 @@ function _current_lattice_size(lattice_size::SizeType = nothing)
     if CURRENT_LATTICE_SIZE !== nothing
         return CURRENT_LATTICE_SIZE
     else
-        error("Please specify lattice size explicitly")
+        error("Failed to obtain current lattice size. Please generate a hamiltonian matrix or call TopologicalMarkers._set_lattice_size!")
     end
 end
 
+@doc """
+    _set_lattice_size!(lattice_size::NTuple{2, Int})
+    _set_lattice_size!(a::Int, b::Int)
+
+Sets size of the lattice of the Chern insulator.
+"""
 function _set_lattice_size!(lattice_size::NTuple{2, Int})
     global CURRENT_LATTICE_SIZE = lattice_size
 end
