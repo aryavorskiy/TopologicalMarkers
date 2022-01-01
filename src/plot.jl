@@ -97,13 +97,13 @@ function optimal_layout(figures_total::Int; plot_aspect_ratio::SizeType=nothing,
     end
 end
 
-function _keys_by_prefix(dct::Iterators.Pairs, prefix::AbstractString)
+function _pop_keys_by_prefix(dct::Dict, prefix::AbstractString)
     out = Dict()
     pl = length(prefix)
     for k in keys(dct)
         sk = String(k)
         if startswith(sk, prefix) && sk != prefix
-            out[Symbol(sk[pl + 1:end])] = dct[k]
+            out[Symbol(sk[pl + 1:end])] = pop!(dct, k)
         end
     end
     return out
@@ -140,9 +140,13 @@ function plot_figure!(pl::AbstractPlot; hmap=nothing, currents=nothing, domain_m
     xlims::SizeType=nothing, ylims::SizeType=nothing, scale_currents::Bool=false,
     lattice_size::SizeType=nothing, kw...)
     lattice_size = _current_lattice_size(lattice_size)
-    hmap_kw = _keys_by_prefix(kw, "hmap")
-    currents_kw = _keys_by_prefix(kw, "currents")
-    bounds_kw = _keys_by_prefix(kw, "bounds")
+    kw_dict = Dict(kw)
+    hmap_kw = _pop_keys_by_prefix(kw_dict, "hmap")
+    currents_kw = _pop_keys_by_prefix(kw_dict, "currents")
+    bounds_kw = _pop_keys_by_prefix(kw_dict, "bounds")
+    if !isempty(kw_dict)
+        @warn "Ignoring keyword arguments:\n " * join(keys(kw_dict) .|> string, ", ")
+    end
     xlims = xlims !== nothing ? xlims : (0, lattice_size[1] + 1)
     ylims = ylims !== nothing ? ylims : (0, lattice_size[2] + 1)
     if hmap !== nothing
@@ -219,14 +223,15 @@ function plot_auto(args...; layout=nothing, plot_size=nothing,
     end
     p = plot(layout=layout, size=plot_size)
 
-    splitline_kw = _keys_by_prefix(kw, "splitline")
-    cutaway_kw = _keys_by_prefix(kw, "cutaway")
+    kw_dict = Dict(kw)
+    splitline_kw = _pop_keys_by_prefix(kw_dict, "splitline")
+    cutaway_kw = _pop_keys_by_prefix(kw_dict, "cutaway")
 
     # Process args
     for i in 1:length(args)
         repr, tit, cur = _expand_arg(args[i], lattice_size)
         plot!(p[i], title=tit)
-        plot_figure!(p[i]; hmap=repr, currents=cur, lattice_size=lattice_size, domain_mapping=domain_mapping, kw...)
+        plot_figure!(p[i]; hmap=repr, currents=cur, lattice_size=lattice_size, domain_mapping=domain_mapping, kw_dict...)
         for site_idx = 1:length(sites)
             site = sites[site_idx]
             p_cutaway = p[site_idx + length(args)];
